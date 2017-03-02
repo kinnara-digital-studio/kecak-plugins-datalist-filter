@@ -15,7 +15,6 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault{
 	
 	@SuppressWarnings("unchecked")
 	public String getTemplate(DataList datalist, String name, String label) {
-		// TODO Auto-generated method stub9
 		PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         @SuppressWarnings("rawtypes")
 		Map dataModel = new HashMap();
