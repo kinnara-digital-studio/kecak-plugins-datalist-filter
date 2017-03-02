@@ -1,7 +1,8 @@
-package com.kinnara.kecakplugins.selectboxdatalistfilter;
+package com.kinnara.kecakplugins.advancedatalistfilter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -14,7 +15,7 @@ public class Activator implements BundleActivator {
         registrationList = new ArrayList<ServiceRegistration>();
 
         //Register plugin here
-        //registrationList.add(context.registerService(MyPlugin.class.getName(), new MyPlugin(), null));
+        registrationList.add(context.registerService(SelectBoxDataListFilter.class.getName(), new SelectBoxDataListFilter(), null));
     }
 
     public void stop(BundleContext context) {

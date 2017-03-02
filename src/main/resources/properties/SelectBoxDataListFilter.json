@@ -1,0 +1,40 @@
+[{
+    title : '@@datalist.sbdlfp.editSelectBox@@',
+    properties : [{
+	        name : 'defaultValue',
+	        label : '@@datalist.sbdlfp.defaultValue@@',
+	        type : 'textfield'
+    	},
+    	{
+	        name : 'options',
+	        label : '@@datalist.sbdlfp.options@@',
+	        type : 'grid',
+	        columns : [{
+	            key : 'value',
+	            label : '@@datalist.sbdlfp.value@@'
+	        },
+	        {
+	            key : 'label',
+	            label : '@@datalist.sbdlfp.label@@'
+	        }]
+    	},
+    	{
+	        name : 'optionsBinder',
+	        label : '@@datalist.sbdlfp.chooseOptionsBinder@@',
+	        type : 'elementselect',
+	        options_ajax : '[CONTEXT_PATH]/web/property/json/getElements?classname=org.joget.apps.form.model.FormLoadOptionsBinder',
+	        url : '[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions'
+	    },
+	    {
+	        name : 'multiple',
+	        label : '@@datalist.sbdlfp.multipleSelection@@',
+	        type : 'checkbox',
+	        value : 'False',
+	        options : [{
+	            value : 'true',
+	            label : ''
+	        }]
+	  	}]
+}]
+
+	    
