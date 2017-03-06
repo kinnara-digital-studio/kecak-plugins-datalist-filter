@@ -9,6 +9,10 @@ import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
+import org.joget.apps.form.lib.FormOptionsBinder;
+import org.joget.apps.form.model.FormRow;
+import org.joget.apps.form.model.FormRowSet;
+import org.joget.apps.form.service.FormUtil;
 import org.joget.plugin.base.PluginManager;
 
 public class SelectBoxDataListFilter extends DataListFilterTypeDefault{
@@ -28,9 +32,27 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault{
                 options.add((Map)colObj);
             }
         }
+        
+        {
+        	// load from options binder
+	        Map<String, Object> optionsBinder = (Map<String, Object>)getProperty("optionsBinder");
+	    	
+	    	String className = optionsBinder.get("className").toString();
+	        FormOptionsBinder optionsBinderPlugins = (FormOptionsBinder)pluginManager.getPlugin(className);
+	        
+	        optionsBinderPlugins.setProperties((Map)optionsBinder.get("properties"));
+	        
+	        FormRowSet optionsRowsSet = optionsBinderPlugins.loadAjaxOptions(null);
+	        for(FormRow row : optionsRowsSet) {
+	        	// TODO
+//	        	String value = row.getProperty(FormUtil.PROPERTY_VALUE);
+//	        	String label = row.getProperty(FormUtil.PROPERTY_LABEL);
+	        }
+        }
+        
         dataModel.put("options", options);
-        dataModel.put("optionsBinder", (Map) getProperty("optionsBinder"));
         dataModel.put("multiple", getValue(datalist, name, getPropertyString("multiple")));
+                
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
 	}
 
