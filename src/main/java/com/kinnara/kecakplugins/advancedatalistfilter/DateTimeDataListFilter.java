@@ -6,12 +6,10 @@ import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.plugin.base.PluginManager;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
+public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
     @SuppressWarnings("unchecked")
     public String getTemplate(DataList datalist, String name, String label) {
@@ -21,24 +19,19 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("label", label);
         dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
-        Object          columns = getProperty("options");
-        Collection<Map> options = new ArrayList<Map>();
-        if (columns != null) {
-            for (Object colObj : (Object[]) columns) {
-                options.add((Map) colObj);
-            }
-        }
-        dataModel.put("options", options);
         dataModel.put("optionsBinder", (Map) getProperty("optionsBinder"));
-        dataModel.put("multiple", getValue(datalist, name, getPropertyString("multiple")));
-        return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
+        dataModel.put("className", getClassName());
+
+        return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/DatetimeDataListFilter.ftl", null);
     }
 
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
         String                    value       = getValue(datalist, name, getPropertyString("defaultValue"));
+        String                    column      = datalist.getBinder().getColumnName(name);
+        String                    operator    = column.toLowerCase().contains("created") ? ">=" : "<=";
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
-            queryObject.setQuery("lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?)");
+            queryObject.setQuery(String.format("DATE(%s) %s DATE(?)", column, operator));
             queryObject.setValues(new String[]{'%' + value + '%'});
 
             return queryObject;
@@ -52,19 +45,19 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getLabel() {
-        return "Select Box";
+        return "Datetime Filter";
     }
 
     public String getPropertyOptions() {
-        return AppUtil.readPluginResource(getClass().getName(), "/properties/SelectBoxDataListFilter.json", null, true, "messages/SelectBoxDataListFilter");
+        return AppUtil.readPluginResource(getClass().getName(), "/properties/DatetimeDataListFilter.json", null, true, null);
     }
 
     public String getDescription() {
-        return "Data List Filter Type - Select Box";
+        return "Data List Filter Type - Datetime";
     }
 
     public String getName() {
-        return "Select Box Data List Filter";
+        return "Datetime Data List Filter";
     }
 
     public String getVersion() {

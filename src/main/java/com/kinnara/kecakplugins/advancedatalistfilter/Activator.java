@@ -15,6 +15,7 @@ public class Activator implements BundleActivator {
         registrationList = new ArrayList<ServiceRegistration>();
 
         //Register plugin here
+        registrationList.add(context.registerService(DateTimeDataListFilter.class.getName(), new DateTimeDataListFilter(), null));
         registrationList.add(context.registerService(SelectBoxDataListFilter.class.getName(), new SelectBoxDataListFilter(), null));
     }
 
