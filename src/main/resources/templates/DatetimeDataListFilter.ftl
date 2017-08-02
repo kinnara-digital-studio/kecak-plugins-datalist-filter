@@ -2,7 +2,8 @@
     <link rel="stylesheet" href="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/css/bootstrap-datetimepicker.css">
     <script src="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
 
-    <input name="${name}" id="${name}Filter" class="datetimepicker" type="text" placeholder="Pick Date">
+    <input name="dateCreated" id="dateCreatedFilter" class="datetimepicker" type="text" placeholder="Start Date">
+    <input name="dateFinished" id="dateFinishedFilter" class="datetimepicker" type="text" placeholder="End Date" disabled>
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -12,6 +13,11 @@
                 todayBtn      : true,
                 pickerPosition: "bottom-left",
                 minView       : 'day'
+            });
+
+            $("#dateCreatedFilter").datetimepicker().on("changeDate", function(e){
+                $("#dateFinishedFilter").datetimepicker('setStartDate', e.date);
+                $("#dateFinishedFilter").removeAttr("disabled");
             });
         });
     </script>
