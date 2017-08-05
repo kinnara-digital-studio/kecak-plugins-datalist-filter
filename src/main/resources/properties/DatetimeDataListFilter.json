@@ -1,18 +1,21 @@
 [
     {
-        title: '@@datalist.sbdlfp.editSelectBox@@',
+        title: '@@datalist.dtdlfp.editSelectBox@@',
         properties: [
             {
-                name: 'defaultValue',
-                label: '@@datalist.sbdlfp.defaultValue@@',
-                type: 'textfield'
+                name: 'DatetimePickerFormat',
+                label: 'Datetime Picker Format',
+                type: 'textfield',
+                required: 'true',
+                value: 'yyyy-mm-dd hh:ii:ss'
             },
             {
-                name: 'optionsBinder',
-                label: '@@datalist.sbdlfp.chooseOptionsBinder@@',
-                type: 'elementselect',
-                options_ajax: '[CONTEXT_PATH]/web/property/json/getElements?classname=org.joget.apps.form.model.FormLoadOptionsBinder',
-                url: '[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions'
+                name: 'HsqlDatabaseDateFormat',
+                label: 'HSQL Database Date Format',
+                type: 'textfield',
+                required: 'true',
+                value: 'YYYY-MM-DD HH:MI:SS',
+                description:'YYYY : 4 years digit<br/>MM : Month<br/>DD : Day'
             }
         ]
     }

@@ -18,7 +18,9 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         Map dataModel = new HashMap();
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("label", label);
-        dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
+        dataModel.put("dateFormat", getPropertyString("DatetimePickerFormat"));
+        dataModel.put("valueFrom", getValue(datalist, name + "_from", ""));
+        dataModel.put("valueTo", getValue(datalist, name + "_to", ""));
         dataModel.put("optionsBinder", (Map) getProperty("optionsBinder"));
         dataModel.put("className", getClassName());
 
@@ -27,12 +29,17 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
-        String                    value       = getValue(datalist, name, getPropertyString("defaultValue"));
-        String                    column      = datalist.getBinder().getColumnName(name);
-        String                    operator    = column.toLowerCase().contains("created") ? ">=" : "<=";
-        if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
-            queryObject.setQuery(String.format("DATE(%s) %s DATE(?)", column, operator));
-            queryObject.setValues(new String[]{'%' + value + '%'});
+
+        String valueFrom = getValue(datalist, name + "_from", "");
+        String valueTo   = getValue(datalist, name + "_to", "");
+
+        valueFrom = valueFrom.isEmpty() ? "1970-01-01 00:00:00" : valueFrom;
+        valueTo = valueTo.isEmpty() ? "9999-12-31 23:59:59" : valueTo;
+//        String column    = datalist.getBinder().getColumnName(name);
+
+        if (datalist != null && datalist.getBinder() != null) {
+            queryObject.setQuery(String.format("CAST(%s AS timestamp) BETWEEN CAST(? AS timestamp) AND CAST(? AS timestamp)", name));
+            queryObject.setValues(new String[]{valueFrom, valueTo});
 
             return queryObject;
         }
@@ -49,7 +56,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getPropertyOptions() {
-        return AppUtil.readPluginResource(getClass().getName(), "/properties/DatetimeDataListFilter.json", null, true, null);
+        return AppUtil.readPluginResource(getClass().getName(), "/properties/DatetimeDataListFilter.json", null, true, "/messages/DatetimeDataListFilter");
     }
 
     public String getDescription() {
