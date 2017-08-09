@@ -4,7 +4,7 @@
     <groupId>com.kinnara</groupId>
     <artifactId>kecak-plugins-advance-datalist-filter</artifactId>
     <packaging>bundle</packaging>
-    <version>5.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>kecak-plugins-advance-datalist-filter</name>
     <url>http://www.kinnarastudio.com</url>
     <build>
@@ -15,6 +15,19 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
             <plugin>
@@ -83,26 +96,6 @@
             <artifactId>wflow-core</artifactId>
             <version>5.0-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.joget</groupId>
-            <artifactId>wflow-core</artifactId>
-            <version>5.0-BETA9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.joget</groupId>
-            <artifactId>wflow-plugin-base</artifactId>
-            <version>5.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.joget</groupId>
-            <artifactId>wflow-core</artifactId>
-            <version>5.0-BETA9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.joget</groupId>
-            <artifactId>wflow-core</artifactId>
-            <version>5.0-SNAPSHOT</version>
         </dependency>
         <!-- Change plugin specific dependencies here -->
         

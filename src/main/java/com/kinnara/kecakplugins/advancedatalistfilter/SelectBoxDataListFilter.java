@@ -74,7 +74,7 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getLabel() {
-        return "Select Box";
+        return getName();
     }
 
     public String getPropertyOptions() {
@@ -82,7 +82,7 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getDescription() {
-        return "Data List Filter Type - Select Box";
+        return "Artifact ID : " +  getClass().getPackage().getImplementationTitle() + "; Data List Filter Type - Select Box";
     }
 
     public String getName() {

@@ -33,8 +33,8 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         String valueFrom = getValue(datalist, name + "_from", "");
         String valueTo   = getValue(datalist, name + "_to", "");
 
-        valueFrom = valueFrom.isEmpty() ? "1970-01-01 00:00:00" : valueFrom;
-        valueTo = valueTo.isEmpty() ? "9999-12-31 23:59:59" : valueTo;
+        valueFrom = valueFrom == null || valueFrom.isEmpty() ? "1970-01-01 00:00:00" : valueFrom;
+        valueTo = valueTo == null || valueTo.isEmpty() ? "9999-12-31 23:59:59" : valueTo;
 //        String column    = datalist.getBinder().getColumnName(name);
 
         if (datalist != null && datalist.getBinder() != null) {
@@ -52,7 +52,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getLabel() {
-        return "Datetime Filter";
+        return getName();
     }
 
     public String getPropertyOptions() {
@@ -60,15 +60,15 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getDescription() {
-        return "Data List Filter Type - Datetime";
+        return "Artifact ID : "+ getClass().getPackage().getImplementationTitle() +"; Data List Filter Type - Datetime";
     }
 
     public String getName() {
-        return "Datetime Data List Filter";
+        return "Kecak Datetime Data List Filter";
     }
 
     public String getVersion() {
-        return "1.0.0";
+        return getClass().getPackage().getImplementationVersion();
     }
     //</editor-fold>
 
