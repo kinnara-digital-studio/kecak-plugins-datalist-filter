@@ -31,10 +31,10 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
         Object          columns = getProperty("options");
         Collection<Map> options = new ArrayList<Map>();
 
-        Map<String, Object> defaultValue = new HashMap<>();
-        defaultValue.put(FormUtil.PROPERTY_VALUE, "");
-        defaultValue.put(FormUtil.PROPERTY_LABEL, label + "...");
-        options.add(defaultValue);
+//        Map<String, Object> defaultValue = new HashMap<>();
+//        defaultValue.put(FormUtil.PROPERTY_VALUE, "");
+//        defaultValue.put(FormUtil.PROPERTY_LABEL, label + "...");
+//        options.add(defaultValue);
 
         if (columns != null) {
             for (Object colObj : (Object[]) columns) {

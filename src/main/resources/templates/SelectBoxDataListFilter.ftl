@@ -1,4 +1,4 @@
-<div>
+<div  style="padding-right: 8px;">
 	<link rel="stylesheet" href="${request.contextPath}/plugin/org.joget.apps.form.lib.SelectBox/css/chosen.min.css">
 	<script src="${request.contextPath}/plugin/org.joget.apps.form.lib.SelectBox/js/chosen.jquery.min.js" type="text/javascript"></script>
 
@@ -21,7 +21,8 @@
 			}
 			
 			for (var selector in config) {
-			  $(selector).chosen({width : "110%"});
+			  $(selector).chosen({width : "110%"
+			  });
 			}
 		});
     </script>
