@@ -1,7 +1,6 @@
 <div>
 	<link rel="stylesheet" href="${request.contextPath}/plugin/org.joget.apps.form.lib.SelectBox/css/chosen.min.css">
 	<script src="${request.contextPath}/plugin/org.joget.apps.form.lib.SelectBox/js/chosen.jquery.min.js" type="text/javascript"></script>
-	
 
         <select class="chosen-select" id="${name}Filter" name="${name!}" <#if multiple! == 'true'>multiple</#if>>
             <#list options as option>

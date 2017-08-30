@@ -1,14 +1,16 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
+import org.hibernate.sql.ForUpdateFragment;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
-import org.joget.apps.form.lib.FormOptionsBinder;
-import org.joget.apps.form.model.FormRow;
+import org.joget.apps.form.model.FormAjaxOptionsBinder;
 import org.joget.apps.form.model.FormRowSet;
 import org.joget.apps.form.service.FormUtil;
+import org.joget.plugin.base.Plugin;
 import org.joget.plugin.base.PluginManager;
+import org.joget.plugin.property.model.PropertyEditable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,32 +27,36 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("label", label);
         dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
+
+        // from property "options"
         Object          columns = getProperty("options");
         Collection<Map> options = new ArrayList<Map>();
+
+        Map<String, Object> defaultValue = new HashMap<>();
+        defaultValue.put(FormUtil.PROPERTY_VALUE, "");
+        defaultValue.put(FormUtil.PROPERTY_LABEL, label + "...");
+        options.add(defaultValue);
+
         if (columns != null) {
             for (Object colObj : (Object[]) columns) {
                 options.add((Map) colObj);
             }
         }
-
+        
         {
-            // load from options binder
-            Map<String, Object> optionsBinder = (Map<String, Object>) getProperty("optionsBinder");
-
-            String            className            = optionsBinder.get("className").toString();
-
-
-            FormOptionsBinder optionsBinderPlugins = (FormOptionsBinder) pluginManager.getPlugin(className);
-
-            optionsBinderPlugins.setProperties((Map) optionsBinder.get("properties"));
-
-            FormRowSet optionsRowsSet = optionsBinderPlugins.loadAjaxOptions(null);
+        	// load from property "optionsBinder"
+	        Map<String, Object> optionsBinder = (Map<String, Object>)getProperty("optionsBinder");
+	    	
+	    	String className = optionsBinder.get("className").toString();
+            Plugin optionsBinderPlugins = pluginManager.getPlugin(className);
+            ((PropertyEditable)optionsBinderPlugins).setProperties((Map)optionsBinder.get("properties"));
+	        FormRowSet optionsRowsSet = ((FormAjaxOptionsBinder)optionsBinderPlugins).loadAjaxOptions(null);
             options.addAll(optionsRowsSet);
         }
-
+        
         dataModel.put("options", options);
         dataModel.put("multiple", getValue(datalist, name, getPropertyString("multiple")));
-
+                
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
     }
 
@@ -80,16 +86,15 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getDescription() {
-        return "Artifact ID : " + getClass().getPackage().getImplementationTitle() + "; Data List Filter Type - Select Box";
+        return "Artifact ID : " +  getClass().getPackage().getImplementationTitle() + "; Data List Filter Type - Select Box";
     }
 
     public String getName() {
-        return "Select Box Data List Filter";
+        return "Kecak Select Box Data List Filter";
     }
 
     public String getVersion() {
         return "1.0.0";
     }
     //</editor-fold>
-
 }
