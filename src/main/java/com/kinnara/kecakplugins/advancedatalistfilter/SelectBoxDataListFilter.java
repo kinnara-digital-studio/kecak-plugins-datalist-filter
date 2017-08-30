@@ -32,27 +32,25 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
                 options.add((Map) colObj);
             }
         }
-        
+
         {
-        	// load from options binder
-	        Map<String, Object> optionsBinder = (Map<String, Object>)getProperty("optionsBinder");
-	    	
-	    	String className = optionsBinder.get("className").toString();
-	        FormOptionsBinder optionsBinderPlugins = (FormOptionsBinder)pluginManager.getPlugin(className);
-	        
-	        optionsBinderPlugins.setProperties((Map)optionsBinder.get("properties"));
-	        
-	        FormRowSet optionsRowsSet = optionsBinderPlugins.loadAjaxOptions(null);
-	        for(FormRow row : optionsRowsSet) {
-	        	// TODO
-//	        	String value = row.getProperty(FormUtil.PROPERTY_VALUE);
-//	        	String label = row.getProperty(FormUtil.PROPERTY_LABEL);
-	        }
+            // load from options binder
+            Map<String, Object> optionsBinder = (Map<String, Object>) getProperty("optionsBinder");
+
+            String            className            = optionsBinder.get("className").toString();
+
+
+            FormOptionsBinder optionsBinderPlugins = (FormOptionsBinder) pluginManager.getPlugin(className);
+
+            optionsBinderPlugins.setProperties((Map) optionsBinder.get("properties"));
+
+            FormRowSet optionsRowsSet = optionsBinderPlugins.loadAjaxOptions(null);
+            options.addAll(optionsRowsSet);
         }
-        
+
         dataModel.put("options", options);
         dataModel.put("multiple", getValue(datalist, name, getPropertyString("multiple")));
-                
+
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
     }
 
@@ -82,7 +80,7 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getDescription() {
-        return "Artifact ID : " +  getClass().getPackage().getImplementationTitle() + "; Data List Filter Type - Select Box";
+        return "Artifact ID : " + getClass().getPackage().getImplementationTitle() + "; Data List Filter Type - Select Box";
     }
 
     public String getName() {

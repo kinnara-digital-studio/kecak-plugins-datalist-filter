@@ -97,7 +97,7 @@
             <version>5.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <!-- Change plugin specific dependencies here -->
+      <!-- Change plugin specific dependencies here -->
         
         <!-- End change plugin specific dependencies here -->
     </dependencies>

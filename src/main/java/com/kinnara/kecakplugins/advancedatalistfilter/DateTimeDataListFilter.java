@@ -34,7 +34,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         String valueTo   = getValue(datalist, name + "_to", "");
 
         valueFrom = valueFrom == null || valueFrom.isEmpty() ? "1970-01-01 00:00:00" : valueFrom;
-        valueTo = valueTo == null || valueTo.isEmpty() ? "9999-12-31 23:59:59" : valueTo;
+            valueTo = valueTo == null || valueTo.isEmpty() ? "9999-12-31 23:59:59" : valueTo;
 //        String column    = datalist.getBinder().getColumnName(name);
 
         if (datalist != null && datalist.getBinder() != null) {
