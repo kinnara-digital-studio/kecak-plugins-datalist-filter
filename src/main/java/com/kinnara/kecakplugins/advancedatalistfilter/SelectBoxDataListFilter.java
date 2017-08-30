@@ -1,6 +1,5 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
-import org.hibernate.sql.ForUpdateFragment;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
