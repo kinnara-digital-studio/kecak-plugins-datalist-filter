@@ -64,7 +64,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getName() {
-        return "Kecak Datetime Data List Filter";
+        return "Datetime Data";
     }
 
     public String getVersion() {

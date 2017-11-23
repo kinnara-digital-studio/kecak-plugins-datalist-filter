@@ -89,11 +89,11 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getName() {
-        return "Kecak Select Box Data List Filter";
+        return "Select Box";
     }
 
     public String getVersion() {
-        return "1.0.0";
+        return getClass().getPackage().getImplementationVersion();
     }
     //</editor-fold>
 }
