@@ -7,14 +7,13 @@ import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.apps.form.model.FormAjaxOptionsBinder;
 import org.joget.apps.form.model.FormRowSet;
 import org.joget.apps.form.service.FormUtil;
+import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.Plugin;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.property.model.PropertyEditable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
 
@@ -42,19 +41,22 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
             }
         }
         
-        {
+
         	// load from property "optionsBinder"
-	        Map<String, Object> optionsBinder = (Map<String, Object>)getProperty("optionsBinder");
-	    	
+        Map<String, Object> optionsBinder = (Map<String, Object>)getProperty("optionsBinder");
+
+        if(optionsBinder != null){
 	    	String className = optionsBinder.get("className").toString();
             Plugin optionsBinderPlugins = pluginManager.getPlugin(className);
-            ((PropertyEditable)optionsBinderPlugins).setProperties((Map)optionsBinder.get("properties"));
-	        FormRowSet optionsRowsSet = ((FormAjaxOptionsBinder)optionsBinderPlugins).loadAjaxOptions(null);
-            options.addAll(optionsRowsSet);
+            if(optionsBinderPlugins != null && optionsBinder.get("properties") != null) {
+                ((PropertyEditable) optionsBinderPlugins).setProperties((Map) optionsBinder.get("properties"));
+                FormRowSet optionsRowsSet = ((FormAjaxOptionsBinder) optionsBinderPlugins).loadAjaxOptions(null);
+                options.addAll(optionsRowsSet);
+            }
         }
         
         dataModel.put("options", options);
-        dataModel.put("multiple", getValue(datalist, name, getPropertyString("multiple")));
+        dataModel.put("multivalue", getPropertyString("multivalue"));
                 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
     }
@@ -63,8 +65,19 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
         String                    value       = getValue(datalist, name, getPropertyString("defaultValue"));
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
-            queryObject.setQuery("lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?)");
-            queryObject.setValues(new String[]{'%' + value + '%'});
+            String[] params = Arrays.stream(value.split(";"))
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+
+            String query = Arrays.stream(params)
+                    .map(s -> "lower(" + datalist.getBinder().getColumnName(name) + ") like lower('%'||?||'%')")
+                    .collect(Collectors.joining(" OR "));
+            queryObject.setQuery("(" + query + ")");
+            queryObject.setValues(params);
+            LogUtil.info(getClassName(), "query ["+query+"]");
+
+//            queryObject.setQuery("lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?)");
+//            queryObject.setValues(new String[]{'%' + value + '%'});
 
             return queryObject;
         }

@@ -2,7 +2,7 @@
 	<link rel="stylesheet" href="${request.contextPath}/plugin/org.joget.apps.form.lib.SelectBox/css/chosen.min.css">
 	<script src="${request.contextPath}/plugin/org.joget.apps.form.lib.SelectBox/js/chosen.jquery.min.js" type="text/javascript"></script>
 
-        <select class="chosen-select" id="${name}Filter" name="${name!}" <#if multiple! == 'true'>multiple</#if>>
+        <select class="chosen-select" id="${name}Filter" name="${name!}" ${multivalue!}>
             <#list options as option>
                 <option value="${option.value!?html}" grouping="${option.grouping!?html}" <#if value?? && value! == (option.value!)>selected</#if>>${option.label!?html}</option>
             </#list>
