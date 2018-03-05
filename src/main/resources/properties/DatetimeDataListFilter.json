@@ -15,8 +15,9 @@
                 ]
             },
             {
-                name : 'databaseDateFormat',
-                label : '@@datalist.dtdlfp.databaseDateFormat@@',
+                name : 'databaseDateFunction',
+                label : '@@datalist.dtdlfp.databaseDateFunction@@',
+                description : '@@datalist.dtdlfp.databaseDateFunction.desc@@',
                 type: 'textfield'
             }
         ]

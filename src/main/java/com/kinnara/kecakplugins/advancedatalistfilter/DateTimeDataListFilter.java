@@ -56,12 +56,13 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
         LogUtil.info(getClassName(), "valueFrom ["+valueFrom+"] valueTo ["+valueTo+"]");
         if (datalist != null && datalist.getBinder() != null && valueFrom != null && !valueFrom.isEmpty() && valueTo != null && !valueTo.isEmpty()) {
-            String databaseDateFormat = getPropertyString("databaseDateFormat");
-            if(databaseDateFormat == null || databaseDateFormat.isEmpty()) {
+            String databaseDateFunction = getPropertyString("databaseDateFunction");
+            if(databaseDateFunction == null || databaseDateFunction.isEmpty()) {
                 queryObject.setQuery(String.format("CAST(%s AS timestamp) BETWEEN CAST(? AS timestamp) AND CAST(? AS timestamp)", datalist.getBinder().getColumnName(name)));
             } else {
                 // only mysql????
-                queryObject.setQuery(String.format("str_to_date(%s, '%s') BETWEEN CAST(? AS timestamp) AND CAST(? AS timestamp)", datalist.getBinder().getColumnName(name), databaseDateFormat));
+                databaseDateFunction = databaseDateFunction.replaceAll("\\?", datalist.getBinder().getColumnName(name));
+                queryObject.setQuery(String.format("%s BETWEEN CAST(? AS timestamp) AND CAST(? AS timestamp)", databaseDateFunction));
             }
             queryObject.setValues(new String[]{valueFrom, valueTo});
 
