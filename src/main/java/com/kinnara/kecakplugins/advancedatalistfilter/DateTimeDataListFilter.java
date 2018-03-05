@@ -30,12 +30,19 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
 
-        String valueFrom = getValue(datalist, name + "_from", "");
-        String valueTo   = getValue(datalist, name + "_to", "");
+        String valueFrom, valueTo;
+        if(getPropertyString("defaultValue") != null && !getPropertyString("defaultValue").isEmpty()) {
+            // more likely it is called from plugin kecak-plugins-datalist-api
+            String[] defaultValues = getPropertyString("defaultValue").split(";");
+            valueFrom = getValue(datalist, name + "_from", defaultValues.length < 1 ? null : defaultValues[0]);
+            valueTo = getValue(datalist, name + "_to", defaultValues.length < 2 ? null : defaultValues[1]);
+        } else {
+            valueFrom = getValue(datalist, name + "_from");
+            valueTo = getValue(datalist, name + "_to");
+        }
 
         valueFrom = valueFrom == null || valueFrom.isEmpty() ? "1970-01-01 00:00:00" : valueFrom;
-            valueTo = valueTo == null || valueTo.isEmpty() ? "9999-12-31 23:59:59" : valueTo;
-//        String column    = datalist.getBinder().getColumnName(name);
+        valueTo = valueTo == null || valueTo.isEmpty() ? "9999-12-31 23:59:59" : valueTo;
 
         if (datalist != null && datalist.getBinder() != null) {
             queryObject.setQuery(String.format("CAST(%s AS timestamp) BETWEEN CAST(? AS timestamp) AND CAST(? AS timestamp)", name));
