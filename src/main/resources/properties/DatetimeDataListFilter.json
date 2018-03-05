@@ -1,21 +1,23 @@
 [
     {
-        title: '@@datalist.dtdlfp.editSelectBox@@',
+        title: '@@datalist.dtdlfp.title@@',
         properties: [
             {
-                name: 'DatetimePickerFormat',
-                label: 'Datetime Picker Format',
-                type: 'textfield',
-                required: 'true',
-                value: 'yyyy-mm-dd hh:ii:ss'
+                name: 'showTime',
+                label: '@@datalist.dtdlfp.showTime@@',
+                type: 'checkbox',
+                value: '',
+                options : [
+                    {
+                        value : 'true',
+                        label : ''
+                    }
+                ]
             },
             {
-                name: 'HsqlDatabaseDateFormat',
-                label: 'HSQL Database Date Format',
-                type: 'textfield',
-                required: 'true',
-                value: 'YYYY-MM-DD HH:MI:SS',
-                description:'YYYY : 4 years digit<br/>MM : Month<br/>DD : Day'
+                name : 'databaseDateFormat',
+                label : '@@datalist.dtdlfp.databaseDateFormat@@',
+                type: 'textfield'
             }
         ]
     }

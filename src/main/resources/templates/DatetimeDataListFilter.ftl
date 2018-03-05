@@ -3,21 +3,21 @@
     <script src="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
 
     <#-- <strong>${label}</strong><br/> -->
-    <input name="${name}_from"  id="dateCreatedFilter"  class="datetimepicker" type="text" value="${valueFrom!?html}" placeholder="From : ${label}" readonly>
-    <input name="${name}_to"    id="dateFinishedFilter" class="datetimepicker" type="text" value="${valueTo!?html}"   placeholder="To : ${label}" readonly>
+    <input name="${name}_from"  id="${name}_from"  class="datetimepicker" type="text" value="${valueFrom!?html}" placeholder="From : ${label}" readonly>
+    <input name="${name}_to"    id="${name}_to" class="datetimepicker" type="text" value="${valueTo!?html}"   placeholder="To : ${label}" readonly>
 
     <script type="text/javascript">
         $(document).ready(function () {
-            $(".datetimepicker").datetimepicker({
+            $("[name^='${name}']").datetimepicker({
                 format        : "${dateFormat}",
                 autoclose     : true,
                 todayBtn      : true,
                 pickerPosition: "bottom-left",
-                minView       : 'day'
+                minView       : '${minView}'
             });
 
-            $("#dateCreatedFilter").datetimepicker().on("changeDate", function(e){
-                $("#dateFinishedFilter").datetimepicker('setStartDate', e.date);
+            $("#${name}_from").datetimepicker().on("changeDate", function(e){
+                $("#${name}_to").datetimepicker('setStartDate', e.date);
             });
         });
     </script>
