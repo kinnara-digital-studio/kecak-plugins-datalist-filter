@@ -1,16 +1,13 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
-import org.joda.time.DateTime;
 import org.joget.apps.app.service.AppPluginUtil;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
-import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +51,6 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         valueFrom = valueFrom == null || valueFrom.isEmpty() ? "1970-01-01 00:00:00" : (showTime ? valueFrom : valueFrom + " 00:00:00");
         valueTo = valueTo == null || valueTo.isEmpty() ? "9999-12-31 23:59:59" : (showTime ? valueTo : valueTo + " 23:59:59");
 
-        LogUtil.info(getClassName(), "valueFrom ["+valueFrom+"] valueTo ["+valueTo+"]");
         if (datalist != null && datalist.getBinder() != null && valueFrom != null && !valueFrom.isEmpty() && valueTo != null && !valueTo.isEmpty()) {
             String databaseDateFunction = getPropertyString("databaseDateFunction");
             if(databaseDateFunction == null || databaseDateFunction.isEmpty()) {
