@@ -1,14 +1,12 @@
-<div  style="padding-right: 8px;">
+<div style="padding-right: 8px;">
 	<link rel="stylesheet" href="${request.contextPath}/plugin/org.joget.apps.form.lib.SelectBox/css/chosen.min.css">
 	<script src="${request.contextPath}/plugin/org.joget.apps.form.lib.SelectBox/js/chosen.jquery.min.js" type="text/javascript"></script>
 
-        <select class="chosen-select" id="${name}Filter" name="${name!}" ${multivalue!}>
-            <#list options as option>
-                <option value="${option.value!?html}" grouping="${option.grouping!?html}" <#if value?? && value! == (option.value!)>selected</#if>>${option.label!?html}</option>
-            </#list>
-        </select>
-
-
+    <select class="chosen-select" id="${name}Filter" name="${name!}" ${multivalue!}>
+        <#list options as option>
+            <option value="${option.value!?html}" grouping="${option.grouping!?html}" <#if value?? && value! == (option.value!)>selected</#if>>${option.label!?html}</option>
+        </#list>
+    </select>
     
     <script type="text/javascript">
     	$(document).ready(function(){

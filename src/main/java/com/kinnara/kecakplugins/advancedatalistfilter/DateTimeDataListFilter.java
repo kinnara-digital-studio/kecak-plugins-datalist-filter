@@ -81,7 +81,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     }
 
     public String getDescription() {
-        return "Artifact ID : "+ getClass().getPackage().getImplementationTitle() +"; Data List Filter Type - Datetime";
+        return getClass().getPackage().getImplementationTitle();
     }
 
     public String getName() {
