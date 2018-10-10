@@ -21,10 +21,7 @@ import org.springframework.context.ApplicationContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -46,14 +43,19 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
         String[] values = getValues(dataList, name);
         List<Map<String, String>> optionsValues = (values == null ? Stream.<String>empty() : Arrays.stream(values))
-                .peek(v -> LogUtil.info(getClassName(), "getTemplate value ["+v+"]"))
                 .map(s -> {
                     Map<String, String> m = new HashMap<>();
                     m.put("value", s);
 
                     String[] split = s.split(":", 2);
 
-                    m.put("label", split.length < 2 ? s : Arrays.stream(dataList.getColumns()).filter(c -> split[0].equals(c.getName())).findAny().map(DataListColumn::getLabel).orElse(split[0]) + ":" + split[1]);
+                    m.put("label", split.length < 2
+                            ? s
+                            : Arrays.stream(dataList.getColumns())
+                                    .filter(c -> split[0].equals(c.getName()))
+                                    .findAny()
+                                    .map(DataListColumn::getLabel)
+                                    .orElse(split[0]) + ":" + split[1]);
                     return m;
                 })
                 .collect(Collectors.toList());
@@ -63,13 +65,19 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         dataModel.put("appId", appDefinition.getAppId());
         dataModel.put("appVersion", appDefinition.getVersion());
         dataModel.put("dataListId", dataList.getId());
-        dataModel.put("placeholder", AppPluginUtil.getMessage("multiSelectDataListFilter.search", getClassName(), "/messages/MultivalueDataListFilter")
-                + ": " + Arrays.stream(getPropertyString("columns").split(";"))
+        dataModel.put("placeholder", "Search: ");
+        dataModel.put("placeholder", "Search: "
+                + ": "
+                + (getPropertyString("columns") == null
+                        ? Stream.<String>empty()
+                        : Arrays.stream(getPropertyString("columns").split(";")))
+
                         // map column name to column label
-                        .map(s -> Arrays.stream(dataList.getColumns())
-                                .filter(c -> c.getName().equals(s))
-                                .findAny()
+                        .map(s -> (dataList.getColumns() == null ? Stream.<DataListColumn>empty() : Arrays.stream(dataList.getColumns()))
+                                .filter(Objects::nonNull)
+                                .filter(c -> s.equals(c.getName()))
                                 .map(DataListColumn::getLabel)
+                                .findAny()
                                 .orElse(s))
 
                         .collect(Collectors.joining(", ")));
