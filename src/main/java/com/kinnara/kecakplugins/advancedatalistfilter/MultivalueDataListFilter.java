@@ -6,10 +6,13 @@ import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.model.DatalistDefinition;
 import org.joget.apps.app.service.AppPluginUtil;
 import org.joget.apps.app.service.AppUtil;
-import org.joget.apps.datalist.lib.TextFieldDataListFilterType;
 import org.joget.apps.datalist.model.*;
 import org.joget.apps.datalist.service.DataListService;
 import org.joget.apps.form.lib.SelectBox;
+import org.joget.apps.form.model.FormBinder;
+import org.joget.apps.form.model.FormLoadBinder;
+import org.joget.apps.form.model.FormRow;
+import org.joget.apps.form.model.FormRowSet;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.base.PluginWebSupport;
@@ -18,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MultivalueDataListFilter extends DataListFilterTypeDefault implements PluginWebSupport {
-    private final static int PAGE_SIZE = 10;
+    private final static int PAGE_SIZE = 20;
 
     private static Map<String, DataList> datalistCache = new WeakHashMap<>();
 
@@ -65,7 +69,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         dataModel.put("appId", appDefinition.getAppId());
         dataModel.put("appVersion", appDefinition.getVersion());
         dataModel.put("dataListId", dataList.getId());
-        dataModel.put("placeholder", "Search: ");
         dataModel.put("placeholder", "Search: "
                 + ": "
                 + (getPropertyString("columns") == null
@@ -73,9 +76,11 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                         : Arrays.stream(getPropertyString("columns").split(";")))
 
                         // map column name to column label
-                        .map(s -> (dataList.getColumns() == null ? Stream.<DataListColumn>empty() : Arrays.stream(dataList.getColumns()))
+                        .map(s -> (dataList.getColumns() == null
+                                ? Stream.<DataListColumn>empty()
+                                : Arrays.stream(dataList.getColumns()))
                                 .filter(Objects::nonNull)
-                                .filter(c -> s.equals(c.getName()))
+                                .filter(c -> s.equals(dataList.getBinder().getColumnName(c.getName())))
                                 .map(DataListColumn::getLabel)
                                 .findAny()
                                 .orElse(s))
@@ -92,10 +97,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
     @Override
     public DataListFilterQueryObject getQueryObject(DataList dataList, String name) {
         String[] values = getValues(dataList, name);
-
-        (values == null ? Stream.empty() : Arrays.stream(values))
-                .filter(Objects::nonNull)
-                .forEach(s -> LogUtil.info(getClassName(), "s ["+s+"]"));
 
         if ((values == null ? Stream.<String>empty() : Arrays.stream(values))
                 .filter(Objects::nonNull)
@@ -126,9 +127,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                                 });
                         freeQuery.append(")");
 
-                        LogUtil.info(getClassName(), "freeQuery [" + freeQuery + "]");
-                        LogUtil.info(getClassName(), "freeArgs [" + String.join("; ", freeArgs) + "]");
-
                         queryObject.setQuery(freeQuery.toString());
                         queryObject.setValues(freeArgs.toArray(new String[0]));
                     } else {
@@ -152,7 +150,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         result.setValues(args.toArray(new String[0]));
         result.setOperator("AND");
 
-        LogUtil.info(getClassName(), "query [" + query + "]");
         return result;
     }
 
@@ -186,6 +183,19 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         return AppUtil.readPluginResource(getClassName(), "/properties/MultivalueDataListFilter.json", null, false, "/messages/MultivalueDataListFilter");
     }
 
+    /**
+     * Generate json array with pattern
+     * [
+     *  {
+     *    "id" : "[colName]:[value]"
+     *    "text" : "[colLabel]:[valueLabel]
+     *  }
+     * ]
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
     public void webService(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LogUtil.info(getClassName(), "method ["+request.getMethod()+"] query ["+request.getQueryString()+"]");
@@ -198,87 +208,113 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
             final AppDefinitionDao appDefinitionDao = (AppDefinitionDao) AppUtil.getApplicationContext().getBean("appDefinitionDao");
 
             final String appId = request.getParameter("appId");
+            final String appVersion = request.getParameter("appVersion");
             final String dataListId = request.getParameter("dataListId");
             final String[] columnsParam = request.getParameterValues("columns");
-            final String[] columns = (columnsParam == null ? Stream.<String>empty() : Arrays.stream(columnsParam))
+            @Nonnull final String[] columns = (columnsParam == null ? Stream.<String>empty() : Arrays.stream(columnsParam))
                     .filter(Objects::nonNull)
                     .flatMap(s -> Arrays.stream(s.split(";")))
                     .toArray(String[]::new);
-            final String search = request.getParameter("search");
-            final Pattern searchPattern = Pattern.compile(search == null ? "" : search, Pattern.CASE_INSENSITIVE);
-            final String pageParam = request.getParameter("page");
-            final long page = Objects.isNull(pageParam) ? 0l : Long.parseLong(pageParam);
-            final AppDefinition appDefinition = appDefinitionDao.loadVersion(appId, appDefinitionDao.getPublishedVersion(appId));
+            @Nonnull final String search = request.getParameter("search") == null ? "" : request.getParameter("search");
+            @Nonnull final Pattern searchPattern = Pattern.compile(search, Pattern.CASE_INSENSITIVE);
+            @Nonnull final long page = request.getParameter("page") == null ? 0l : Long.parseLong(request.getParameter("page"));
 
-            final DataList dataListForColumn = generateDataList(appDefinition, dataListId, "");
-            if (dataListForColumn == null) {
+            final AppDefinition appDefinition = appDefinitionDao.loadVersion(appId, appVersion == null ? appDefinitionDao.getPublishedVersion(appId) : Long.parseLong(appVersion));
+
+            if(dataListId == null) {
+                throw new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Parameter [" + dataListId + "] not found");
+            }
+
+            final DataList dataList = generateDataList(appDefinition, dataListId);
+            if (dataList == null) {
                 throw new RestApiException(HttpServletResponse.SC_NOT_FOUND, "DataList [" + dataListId + "] not found");
             }
 
-            JSONArray jsonResults = new JSONArray(Arrays.stream(columns)
-                    .filter(c -> !c.isEmpty())
-                    .flatMap(c -> {
+            if(dataList.getColumns() == null) {
+                throw new RestApiException(HttpServletResponse.SC_FORBIDDEN, "DataList [" + dataListId + "] don't have columns");
+            }
 
-                        final DataList dataList = generateDataList(appDefinition, dataListId, c);
-                        DataListFilterType type = new TextFieldDataListFilterType();
-                        type.setProperty("defaultValue", search);
+            DataListColumn[] dataListColumns = dataList.getColumns();
+            Arrays.sort(dataListColumns, Comparator.comparing(DataListColumn::getName));
 
-                        DataListFilter filter = new DataListFilter();
-                        filter.setLabel(c);
-                        filter.setName(c);
-                        filter.setOperator("AND");
-                        filter.setType(type);
+            Stream<Map<String, String>> streamOptionsBinder = Arrays.stream(columns)
+                    .filter(Objects::nonNull)
+                    .filter(s -> !s.isEmpty())
 
-                        DataListCollection<Map<String, Object>> rows = dataList.getRows(PAGE_SIZE, (int) (page == 0 ? 0 : ((page - 1l) * PAGE_SIZE)));
-                        LogUtil.info(getClassName(), "rows.size ["+rows.size()+"]");
-                        return rows.stream()
-                                .flatMap(r -> r.entrySet().stream())
-                                .filter(e -> c.equals(e.getKey()));
-                    })
+                    // filter by respected column
+                    .map(c -> Arrays.binarySearch(dataListColumns, new DataListColumn(c, "", false), Comparator.comparing(DataListColumn::getName)))
+                    .filter(i -> i >= 0)
+                    .map(i -> dataListColumns[i])
+
+                    .flatMap(c -> Stream.of(c)
+                            .map(DataListColumn::getFormats)
+                            .filter(Objects::nonNull)
+                            .flatMap(Collection::stream)
+                            .filter(Objects::nonNull)
+
+                            // seach for any formatter that has optionsBinder
+                            .map(this::getOptionMap)
+
+                           // Map entry : field_value -> field_label
+                            .flatMap(m -> m.entrySet().stream()
+                                    // fiter by search query
+                                    .filter(e -> searchPattern.matcher(e.getValue()).find()))
+
+                           // build result for each
+                           .map(e -> {
+                               Map<String, String> m = new HashMap<>();
+                               m.put("id",  c.getName() + ":" + e.getKey());
+                               m.put("text", c.getLabel() + ":" + e.getValue());
+                               return m;
+                           }));
+
+            DataListCollection<Map<String, Object>> rows = dataList.getRows();
+            if(rows == null) {
+                LogUtil.info(getClassName(), "rows NULL");
+            }
+
+            if(rows.isEmpty()) {
+                LogUtil.info(getClassName(), "rows IS EMPTY");
+
+                Arrays.stream(dataList.getFilters())
+                        .map(DataListFilter::getName)
+                        .forEach(name -> LogUtil.info(getClassName(), "name ["+name+"]"));
+            }
+
+            Stream<Map<String, String>> streamColumnData = (rows == null
+                    ? Stream.<Map<String, Object>>empty()
+                    : rows.stream())
+
+                    .flatMap(m -> m.entrySet().stream())
+                    .filter(e -> Arrays.stream(columns).anyMatch(c -> c.equals(e.getKey())))
                     .filter(e -> e != null && searchPattern.matcher(String.valueOf(e.getValue())).find())
                     .map(e -> {
                         Map<String, String> m = new HashMap<>();
+
+                        // ID contains FIELD_NAME:FIELD_VALUE
                         m.put("id",  e.getKey() + ":" + e.getValue());
-                        m.put("text",
-                                Arrays.stream(dataListForColumn.getColumns())
-                                        .filter(Objects::nonNull)
-                                        .filter(c -> e.getKey().equals(c.getName()))
-                                        .findAny()
-                                        .map(DataListColumn::getLabel)
-                                        .orElse(String.valueOf(e.getKey()))
-                                + ":"
-                                + e.getValue());
+
+                        // TEXT contains FIELD_LABEL:FIELD_VALUE
+                        m.put("text", Stream.of(Arrays.binarySearch(dataListColumns, new DataListColumn(e.getKey(), "", false), Comparator.comparing(DataListColumn::getName)))
+                                .filter(i -> i >= 0)
+                                .map(i -> dataListColumns[i])
+                                .findAny()
+                                .map(DataListColumn::getLabel)
+                                .orElse(String.valueOf(e.getKey())) + ":" + e.getValue());
 
                         return m;
-                    })
+                    });
+
+            JSONArray jsonResults = new JSONArray(Stream.concat(streamColumnData, streamOptionsBinder)
                     .sorted(Comparator.comparing(m -> m.get("text")))
-                    .peek(m -> m.forEach((k, v) -> LogUtil.info(getClassName(), "key ["+k+"] value ["+v+"]")))
                     .distinct()
                     .skip(((page == 0 ? 1 : page) - 1) * PAGE_SIZE)
                     .limit(PAGE_SIZE)
                     .collect(Collectors.toList()));
 
-//                    JSONArray jsonResults = new JSONArray((optionsRowSet).stream()
-//                            .filter(Objects::nonNull)
-//                            .filter(formRow -> searchPattern.matcher(formRow.getProperty(FormUtil.PROPERTY_LABEL)).find())
-//                            .filter(formRow -> grouping == null
-//                                    || formRow.getProperty(FormUtil.PROPERTY_GROUPING) == null
-//                                    || grouping.isEmpty()
-//                                    || formRow.getProperty(FormUtil.PROPERTY_GROUPING).isEmpty()
-//                                    || grouping.equalsIgnoreCase(formRow.getProperty(FormUtil.PROPERTY_GROUPING)))
-//                            .skip((page - 1) * PAGE_SIZE)
-//                            .limit(PAGE_SIZE)
-//                            .map(formRow -> {
-//                                final Map<String, String> map = new HashMap<>();
-//                                map.put("id", formRow.getProperty(FormUtil.PROPERTY_VALUE));
-//                                map.put("text", formRow.getProperty(FormUtil.PROPERTY_LABEL));
-//                                return map;
-//                            })
-//                            .collect(Collectors.toList()));
-
             try {
                 JSONObject jsonPagination = new JSONObject();
-                jsonPagination.put("more", jsonResults.length() >= PAGE_SIZE);
+                jsonPagination.put("more", jsonResults.length() == PAGE_SIZE);
 
                 JSONObject jsonData = new JSONObject();
                 jsonData.put("results", jsonResults);
@@ -295,16 +331,17 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         }
     }
 
-    private DataList generateDataList(final AppDefinition appDef, final String dataListId, final String columnName) {
-        if(dataListId == null)
-            return null;
+    private DataList generateDataList(final AppDefinition appDef, @Nonnull final String dataListId) {
+        return generateDataList(appDef, dataListId, "");
+    }
 
-        String cacheKey = dataListId + columnName;
+    private DataList generateDataList(final AppDefinition appDef, @Nonnull final String dataListId, @Nonnull final String columnName) {
+        String cacheKey = dataListId + "::" + columnName;
 
         ApplicationContext appContext = AppUtil.getApplicationContext();
 
         if (datalistCache.containsKey(cacheKey)) {
-            LogUtil.info(getClassName(), "Retrieving dataList from cache");
+            LogUtil.info(getClassName(), "Retrieving dataList from cache ["+cacheKey+"]");
             return datalistCache.get(cacheKey);
         }
 
@@ -318,9 +355,45 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         }
 
         DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
-        dataList.setDefaultPageSize(DataList.MAXIMUM_PAGE_SIZE);
-        datalistCache.put(cacheKey, dataList);
-        dataList.setFilters(new DataListFilter[]{  });
+        if(dataList != null) {
+            dataList.setDefaultPageSize(DataList.MAXIMUM_PAGE_SIZE);
+            dataList.setFilters(new DataListFilter[0]);
+            datalistCache.put(cacheKey, dataList);
+            return dataList;
+
+        } else  {
+            LogUtil.warn(getClassName(), "Error generating dataList ["+dataListId+"]");
+        }
+
         return dataList;
+    }
+
+    private @Nonnull Map<String, String> getOptionMap(@Nonnull DataListColumnFormat formatterPlugins) {
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+
+        final Map<String, String> optionMap = new HashMap<>();
+
+        // collect from 'options' properties
+        Object[] options = (Object[]) formatterPlugins.getProperty("options");
+        (options == null ? Stream.empty() : Arrays.stream(options))
+                .map(o -> (Map<String, String>)o)
+                .filter(m -> m.get("value") != null && m.get("label") != null)
+                .forEach(m -> optionMap.put(m.get("value"), m.get("label")));
+
+        // collect from 'optionsBinder'
+        Map<String, Object> formatterOptionsBinder;
+        FormBinder optionBinder;
+        if((formatterOptionsBinder = (Map<String, Object>) formatterPlugins.getProperty("optionsBinder")) != null
+                && formatterOptionsBinder.get("className") != null
+                && (optionBinder = (FormBinder) pluginManager.getPlugin(formatterOptionsBinder.get("className").toString())) != null) {
+
+            optionBinder.setProperties((Map) formatterOptionsBinder.get("properties"));
+            FormRowSet rowSet = ((FormLoadBinder) optionBinder).load(null, null, null);
+            (rowSet == null ? Stream.<FormRow>empty() : rowSet.stream())
+                    .filter(m -> m.get("value") != null && m.get("label") != null)
+                    .forEach(m -> optionMap.put(m.get("value").toString(), m.get("label").toString()));
+        }
+
+        return optionMap;
     }
 }
