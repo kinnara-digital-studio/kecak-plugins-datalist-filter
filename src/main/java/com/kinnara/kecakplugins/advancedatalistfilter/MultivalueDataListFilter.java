@@ -220,6 +220,11 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
             @Nonnull final long page = request.getParameter("page") == null ? 0l : Long.parseLong(request.getParameter("page"));
 
             final AppDefinition appDefinition = appDefinitionDao.loadVersion(appId, appVersion == null ? appDefinitionDao.getPublishedVersion(appId) : Long.parseLong(appVersion));
+            if(appDefinition == null) {
+                throw new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
+            }
+
+            AppUtil.setCurrentAppDefinition(appDefinition);
 
             if(dataListId == null) {
                 throw new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Parameter [" + dataListId + "] not found");
@@ -341,7 +346,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         ApplicationContext appContext = AppUtil.getApplicationContext();
 
         if (datalistCache.containsKey(cacheKey)) {
-            LogUtil.info(getClassName(), "Retrieving dataList from cache ["+cacheKey+"]");
+            LogUtil.debug(getClassName(), "Retrieving dataList from cache ["+cacheKey+"]");
             return datalistCache.get(cacheKey);
         }
 
