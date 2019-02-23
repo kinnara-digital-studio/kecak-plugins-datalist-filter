@@ -34,8 +34,6 @@ import java.util.stream.Stream;
 public class MultivalueDataListFilter extends DataListFilterTypeDefault implements PluginWebSupport {
     private final static int PAGE_SIZE = 20;
 
-    private static Map<String, DataList> datalistCache = new WeakHashMap<>();
-
     @Override
     public String getTemplate(DataList dataList, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
@@ -345,11 +343,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
         ApplicationContext appContext = AppUtil.getApplicationContext();
 
-        if (datalistCache.containsKey(cacheKey)) {
-            LogUtil.debug(getClassName(), "Retrieving dataList from cache ["+cacheKey+"]");
-            return datalistCache.get(cacheKey);
-        }
-
         DataListService dataListService = (DataListService) appContext.getBean("dataListService");
         DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) appContext.getBean("datalistDefinitionDao");
 
@@ -363,7 +356,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         if(dataList != null) {
             dataList.setDefaultPageSize(DataList.MAXIMUM_PAGE_SIZE);
             dataList.setFilters(new DataListFilter[0]);
-            datalistCache.put(cacheKey, dataList);
             return dataList;
 
         } else  {
