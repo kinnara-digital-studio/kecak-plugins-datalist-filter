@@ -16,6 +16,7 @@ import org.joget.apps.form.model.FormRowSet;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.base.PluginWebSupport;
+import org.joget.workflow.util.WorkflowUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -217,7 +218,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
             @Nonnull final Pattern searchPattern = Pattern.compile(search, Pattern.CASE_INSENSITIVE);
             @Nonnull final long page = request.getParameter("page") == null ? 0l : Long.parseLong(request.getParameter("page"));
 
-            final AppDefinition appDefinition = appDefinitionDao.loadVersion(appId, appVersion == null ? appDefinitionDao.getPublishedVersion(appId) : Long.parseLong(appVersion));
+            final AppDefinition appDefinition = appDefinitionDao.loadVersion(appId, appVersion == null || "0".equals(appVersion) || AppDefinition.VERSION_LATEST.equalsIgnoreCase(appVersion) ? appDefinitionDao.getPublishedVersion(appId) : Long.parseLong(appVersion));
             if(appDefinition == null) {
                 throw new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
             }
