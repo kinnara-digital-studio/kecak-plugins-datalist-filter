@@ -55,11 +55,11 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         if (datalist != null && datalist.getBinder() != null && valueFrom != null && !valueFrom.isEmpty() && valueTo != null && !valueTo.isEmpty()) {
             String databaseDateFunction = getPropertyString("databaseDateFunction");
             if(databaseDateFunction == null || databaseDateFunction.isEmpty()) {
-                queryObject.setQuery(String.format("CAST(%s AS timestamp) BETWEEN CAST(? AS timestamp) AND CAST(? AS timestamp)", datalist.getBinder().getColumnName(name)));
+                queryObject.setQuery(String.format("CAST(%s AS DATETIME) BETWEEN CAST(? AS DATETIME) AND CAST(? AS DATETIME)", datalist.getBinder().getColumnName(name)));
             } else {
                 // only mysql????
                 databaseDateFunction = databaseDateFunction.replaceAll("\\?", datalist.getBinder().getColumnName(name));
-                queryObject.setQuery(String.format("%s BETWEEN CAST(? AS timestamp) AND CAST(? AS timestamp)", databaseDateFunction));
+                queryObject.setQuery(String.format("%s BETWEEN CAST(? AS DATETIME) AND CAST(? AS DATETIME)", databaseDateFunction));
             }
             queryObject.setValues(new String[]{valueFrom, valueTo});
 
