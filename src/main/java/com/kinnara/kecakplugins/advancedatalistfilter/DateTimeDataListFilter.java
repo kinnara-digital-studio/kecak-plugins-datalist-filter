@@ -5,7 +5,6 @@ import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
-import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 
 import java.text.DateFormat;
@@ -62,8 +61,6 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
                 queryObject.setQuery(String.format("%s BETWEEN CAST(? AS timestamp) AND CAST(? AS timestamp)", databaseDateFunction));
             }
             queryObject.setValues(new String[]{valueFrom, valueTo});
-
-            LogUtil.info(getClassName(), "query ["+queryObject.getQuery()+"]");
 
             return queryObject;
         }

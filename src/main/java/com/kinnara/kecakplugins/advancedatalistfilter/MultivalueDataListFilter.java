@@ -16,7 +16,6 @@ import org.joget.apps.form.model.FormRowSet;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.base.PluginWebSupport;
-import org.joget.workflow.util.WorkflowUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -197,7 +196,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
      */
     @Override
     public void webService(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        LogUtil.info(getClassName(), "method ["+request.getMethod()+"] query ["+request.getQueryString()+"]");
         try {
             if (!"GET".equals(request.getMethod())) {
                 throw new RestApiException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Only support [GET] method");
@@ -273,17 +271,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                            }));
 
             DataListCollection<Map<String, Object>> rows = dataList.getRows();
-            if(rows == null) {
-                LogUtil.info(getClassName(), "rows NULL");
-            }
-
-            if(rows.isEmpty()) {
-                LogUtil.info(getClassName(), "rows IS EMPTY");
-
-                Arrays.stream(dataList.getFilters())
-                        .map(DataListFilter::getName)
-                        .forEach(name -> LogUtil.info(getClassName(), "name ["+name+"]"));
-            }
 
             Stream<Map<String, String>> streamColumnData = (rows == null
                     ? Stream.<Map<String, Object>>empty()

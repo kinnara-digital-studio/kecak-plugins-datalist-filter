@@ -6,8 +6,6 @@ import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.apps.form.model.FormAjaxOptionsBinder;
 import org.joget.apps.form.model.FormRowSet;
-import org.joget.apps.form.service.FormUtil;
-import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.Plugin;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.property.model.PropertyEditable;
@@ -74,10 +72,6 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
                     .collect(Collectors.joining(" OR "));
             queryObject.setQuery("(" + query + ")");
             queryObject.setValues(params);
-            LogUtil.info(getClassName(), "query ["+query+"]");
-
-//            queryObject.setQuery("lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?)");
-//            queryObject.setValues(new String[]{'%' + value + '%'});
 
             return queryObject;
         }
