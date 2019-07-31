@@ -56,7 +56,6 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
             if(databaseDateFunction == null || databaseDateFunction.isEmpty()) {
                 queryObject.setQuery(String.format("CAST(%s AS DATETIME) BETWEEN CAST(? AS DATETIME) AND CAST(? AS DATETIME)", datalist.getBinder().getColumnName(name)));
             } else {
-                // only mysql????
                 queryObject.setQuery(
                         String.format("%s BETWEEN %s AND %s",
                                 databaseDateFunction.replaceAll("\\?", datalist.getBinder().getColumnName(name)),
