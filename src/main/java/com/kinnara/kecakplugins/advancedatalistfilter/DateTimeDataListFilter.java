@@ -5,7 +5,6 @@ import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
-import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 
 import java.text.DateFormat;
@@ -54,7 +53,6 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         valueFrom = valueFrom == null || valueFrom.isEmpty() ? "1970-01-01 00:00:00" : (showTime ? valueFrom : valueFrom + " 00:00:00");
         valueTo = valueTo == null || valueTo.isEmpty() ? "9999-12-31 23:59:59" : (showTime ? valueTo : valueTo + " 23:59:59");
 
-        LogUtil.info(getClassName(), "column ["+name+"] name ["+datalist.getBinder().getColumnName(name)+"]");
         if (datalist != null && datalist.getBinder() != null && !valueFrom.isEmpty() && !valueTo.isEmpty()) {
             String databaseDateFunction = getPropertyString("databaseDateFunction");
             String filterDateFunction = getPropertyString("filterDateFunction");
