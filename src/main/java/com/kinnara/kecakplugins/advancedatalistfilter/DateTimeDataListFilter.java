@@ -50,16 +50,29 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         }
 
         boolean showTime = "true".equals(getPropertyString("showTime"));
-        valueFrom = valueFrom == null || valueFrom.isEmpty() ? "1970-01-01 00:00:00" : (showTime ? valueFrom : valueFrom + " 00:00:00");
-        valueTo = valueTo == null || valueTo.isEmpty() ? "9999-12-31 23:59:59" : (showTime ? valueTo : valueTo + " 23:59:59");
 
-        if (datalist != null && datalist.getBinder() != null && !valueFrom.isEmpty() && !valueTo.isEmpty()) {
-            String databaseDateFunction = getPropertyString("databaseDateFunction");
-            String filterDateFunction = getPropertyString("filterDateFunction");
+        final String databaseDateFunction;
+        if(valueFrom == null || valueFrom.isEmpty()) {
+            valueFrom = "1970-01-01 00:00:00";
+            databaseDateFunction = "";
+        } else {
+            valueFrom = showTime ? valueFrom : valueFrom + " 00:00:00";
+            databaseDateFunction = getPropertyString("databaseDateFunction");
+        }
 
+        final String filterDateFunction;
+        if(valueTo == null || valueTo.isEmpty()) {
+            valueTo = "9999-12-31 23:59:59";
+            filterDateFunction = "";
+        } else {
+            valueTo = showTime ? valueTo : valueTo + " 23:59:59";
+            filterDateFunction = getPropertyString("filterDateFunction");
+        }
+
+        if (datalist != null && datalist.getBinder() != null) {
             StringBuilder sb = new StringBuilder();
             if(databaseDateFunction == null || databaseDateFunction.isEmpty()) {
-                sb.append("CAST(%s AS DATETIME)");
+                sb.append(String.format("CAST(%s AS DATETIME)", datalist.getBinder().getColumnName(name)));
             } else {
                 sb.append(databaseDateFunction.replaceAll("\\?", datalist.getBinder().getColumnName(name)));
             }
