@@ -19,6 +19,12 @@
                 label : '@@datalist.dtdlfp.databaseDateFunction@@',
                 description : '@@datalist.dtdlfp.databaseDateFunction.desc@@',
                 type: 'textfield'
+            },
+            {
+                name : 'filterDateFunction',
+                label : '@@datalist.dtdlfp.filterDateFunction@@',
+                description : '@@datalist.dtdlfp.filterDateFunction.desc@@',
+                type: 'textfield'
             }
         ]
     }
