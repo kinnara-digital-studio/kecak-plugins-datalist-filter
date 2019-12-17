@@ -15,6 +15,19 @@
                 ]
             },
             {
+                name: 'singleValue',
+                label:  'Single Value',
+                description : '@@datalist.dtdlfp.singleValue.desc@@',
+                value : 'true',
+                type: 'checkbox',
+                options: [
+                    {
+                        value : 'true',
+                        label : ''
+                    }
+                ]
+            },
+            {
                 name : 'databaseDateFunction',
                 label : '@@datalist.dtdlfp.databaseDateFunction@@',
                 description : '@@datalist.dtdlfp.databaseDateFunction.desc@@',

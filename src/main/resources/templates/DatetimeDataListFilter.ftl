@@ -4,7 +4,10 @@
 
     <#-- <strong>${label}</strong><br/> -->
     <input name="${name}_from"  id="${name}_from"  class="datetimepicker" type="text" value="${valueFrom!?html}" placeholder="From : ${label}" readonly>
-    <input name="${name}_to"    id="${name}_to" class="datetimepicker" type="text" value="${valueTo!?html}"   placeholder="To : ${label}" readonly>
+
+    <#if singleValue?? && (singleValue != "true") >
+        <input name="${name}_to"    id="${name}_to" class="datetimepicker" type="text" value="${valueTo!?html}"   placeholder="To : ${label}" readonly>
+    </#if>
 
     <script type="text/javascript">
         $(document).ready(function () {

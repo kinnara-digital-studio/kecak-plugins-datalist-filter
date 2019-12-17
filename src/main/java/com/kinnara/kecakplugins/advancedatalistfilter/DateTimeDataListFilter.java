@@ -7,6 +7,7 @@ import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.plugin.base.PluginManager;
 
+import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -27,9 +28,10 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         dataModel.put("dateFormat", showTime ? "yyyy-mm-dd hh:ii:ss" : "yyyy-mm-dd");
         dataModel.put("valueFrom", getValue(datalist, name + "_from", ""));
         dataModel.put("valueTo", getValue(datalist, name + "_to", ""));
-        dataModel.put("optionsBinder", (Map) getProperty("optionsBinder"));
+        dataModel.put("optionsBinder", getProperty("optionsBinder"));
         dataModel.put("className", getClassName());
         dataModel.put("minView", showTime ? "hour" : "month");
+        dataModel.put("singleValue", getPropertyString("singleValue"));
 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/DatetimeDataListFilter.ftl", null);
     }
@@ -38,19 +40,22 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
 
+        final boolean singleValue = "true".equalsIgnoreCase(getPropertyString("singleValue"));
+
         String valueFrom, valueTo;
         if(getPropertyString("defaultValue") != null && !getPropertyString("defaultValue").isEmpty()) {
             // more likely it is called from plugin kecak-plugins-datalist-api
             String[] defaultValues = getPropertyString("defaultValue").split(";");
             valueFrom = getValue(datalist, name + "_from", defaultValues.length < 1 ? null : defaultValues[0]);
-            valueTo = getValue(datalist, name + "_to", defaultValues.length < 2 ? null : defaultValues[1]);
+            valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to", defaultValues.length < 2 ? null : defaultValues[1]);
         } else {
             valueFrom = getValue(datalist, name + "_from");
-            valueTo = getValue(datalist, name + "_to");
+            valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to");
         }
 
-        boolean showTime = "true".equals(getPropertyString("showTime"));
+        final boolean showTime = "true".equals(getPropertyString("showTime"));
 
+        @Nonnull
         final String databaseDateFunction;
         if(valueFrom == null || valueFrom.isEmpty()) {
             valueFrom = "1970-01-01 00:00:00";
@@ -60,8 +65,9 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
             databaseDateFunction = getPropertyString("databaseDateFunction");
         }
 
+        @Nonnull
         final String filterDateFunction;
-        if(valueTo == null || valueTo.isEmpty()) {
+        if (valueTo == null || valueTo.isEmpty()) {
             valueTo = "9999-12-31 23:59:59";
             filterDateFunction = "";
         } else {
@@ -71,16 +77,16 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
         if (datalist != null && datalist.getBinder() != null) {
             StringBuilder sb = new StringBuilder();
-            if(databaseDateFunction == null || databaseDateFunction.isEmpty()) {
-                sb.append(String.format("CAST(%s AS DATETIME)", datalist.getBinder().getColumnName(name)));
+            if(databaseDateFunction.isEmpty()) {
+                sb.append(String.format("CAST(%s AS date)", datalist.getBinder().getColumnName(name)));
             } else {
                 sb.append(databaseDateFunction.replaceAll("\\?", datalist.getBinder().getColumnName(name)));
             }
 
             sb.append(" BETWEEN ");
 
-            if(filterDateFunction == null || filterDateFunction.isEmpty()) {
-                sb.append("CAST(? AS DATETIME) AND CAST(? AS DATETIME)");
+            if(filterDateFunction.isEmpty()) {
+                sb.append("CAST(? AS date) AND CAST(? AS date)");
             } else {
                 sb.append(String.format("%s AND %s", filterDateFunction, filterDateFunction));
             }
