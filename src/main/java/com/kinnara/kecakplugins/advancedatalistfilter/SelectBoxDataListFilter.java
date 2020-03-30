@@ -10,28 +10,25 @@ import org.joget.plugin.base.Plugin;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.property.model.PropertyEditable;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
 
-    @SuppressWarnings("unchecked")
+    @Override
     public String getTemplate(DataList datalist, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         @SuppressWarnings("rawtypes")
         Map dataModel = new HashMap();
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("label", label);
-        dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
+        dataModel.put("values", getValueSet(datalist, name, getPropertyString("defaultValue")));
 
         // from property "options"
         Object          columns = getProperty("options");
         Collection<Map> options = new ArrayList<Map>();
-
-//        Map<String, Object> defaultValue = new HashMap<>();
-//        defaultValue.put(FormUtil.PROPERTY_VALUE, "");
-//        defaultValue.put(FormUtil.PROPERTY_LABEL, label + "...");
-//        options.add(defaultValue);
 
         if (columns != null) {
             for (Object colObj : (Object[]) columns) {
@@ -54,23 +51,23 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
         }
         
         dataModel.put("options", options);
-        dataModel.put("multivalue", getPropertyString("multivalue"));
+        dataModel.put("multivalue", "true".equalsIgnoreCase(getPropertyString("multivalue")) ? "multiple" : "");
                 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
     }
 
+    @Override
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
-        String                    value       = getValue(datalist, name, getPropertyString("defaultValue"));
-        if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
-            String[] params = Arrays.stream(value.split(";"))
-                    .filter(s -> !s.isEmpty())
-                    .toArray(String[]::new);
+        if (datalist != null && datalist.getBinder() != null) {
+            Set<String> paramSet = getValueSet(datalist, name, getPropertyString("defaultValue"));
 
-            String query = Arrays.stream(params)
-                    .map(s -> "lower(" + datalist.getBinder().getColumnName(name) + ") like lower('%'||?||'%')")
-                    .collect(Collectors.joining(" OR "));
-            queryObject.setQuery("(" + query + ")");
+            String query = paramSet.stream()
+                    .map(s -> "?")
+                    .collect(Collectors.joining(",",  datalist.getBinder().getColumnName(name) + " in (", ")"));
+            String[] params = paramSet.toArray(new String[0]);
+
+            queryObject.setQuery("(" + (paramSet.isEmpty() ? "1 = 1" : query) + ")");
             queryObject.setValues(params);
 
             return queryObject;
@@ -78,27 +75,51 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
         return null;
     }
 
-    //<editor-fold desc="Commons Getter" defaultstate="collapsed">
+    /**
+     * Return values as set
+     * @param datalist
+     * @param name
+     * @param defaultValue
+     * @return
+     */
+    @Nonnull
+    private Set<String> getValueSet(DataList datalist, String name, String defaultValue) {
+        return Optional.ofNullable(getValues(datalist, name, defaultValue))
+                .map(Arrays::stream)
+                .orElseGet(Stream::empty)
+                .map(s -> s.split(";"))
+                .flatMap(Arrays::stream)
+                .distinct()
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public String getClassName() {
         return this.getClass().getName();
     }
 
+    @Override
     public String getLabel() {
-        return getName();
+        return "Select Box";
     }
 
+    @Override
     public String getPropertyOptions() {
         return AppUtil.readPluginResource(getClass().getName(), "/properties/SelectBoxDataListFilter.json", null, true, "messages/SelectBoxDataListFilter");
     }
 
+    @Override
     public String getDescription() {
-        return "Artifact ID : " +  getClass().getPackage().getImplementationTitle() + "; Data List Filter Type - Select Box";
+        return getClass().getPackage().getImplementationTitle();
     }
 
+    @Override
     public String getName() {
-        return "Select Box";
+        return getClassName();
     }
 
+    @Override
     public String getVersion() {
         return getClass().getPackage().getImplementationVersion();
     }

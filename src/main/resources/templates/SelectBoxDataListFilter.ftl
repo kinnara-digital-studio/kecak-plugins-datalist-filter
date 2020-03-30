@@ -4,7 +4,7 @@
 
     <select class="chosen-select" id="${name}Filter" name="${name!}" ${multivalue!}>
         <#list options as option>
-            <option value="${option.value!?html}" grouping="${option.grouping!?html}" <#if value?? && value! == (option.value!)>selected</#if>>${option.label!?html}</option>
+            <option value="${option.value!?html}" <#if values?? && values?seq_contains(option.value!)>selected</#if>>${option.label!?html}</option>
         </#list>
     </select>
     
