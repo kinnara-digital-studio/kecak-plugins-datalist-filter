@@ -31,6 +31,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * @author aristo
+ *
+ * Free Text Filter
+ * Filter as multivalue and multicolumn
+ */
 public class MultivalueDataListFilter extends DataListFilterTypeDefault implements PluginWebSupport {
     private final static int PAGE_SIZE = 20;
 
@@ -153,7 +159,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
     @Override
     public String getName() {
-        return AppPluginUtil.getMessage("multiSelectDataListFilter.title", getClassName(), "/messages/MultivalueDataListFilter");
+        return getClassName();
     }
 
     @Override
@@ -168,7 +174,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
     @Override
     public String getLabel() {
-        return getName();
+        return "Free Text";
     }
 
     @Override

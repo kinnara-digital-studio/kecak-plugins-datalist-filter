@@ -106,7 +106,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
     @Override
     public String getLabel() {
-        return getName();
+        return "Date Time";
     }
 
     @Override
@@ -121,7 +121,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
     @Override
     public String getName() {
-        return AppPluginUtil.getMessage("datalist.dtdlfp.title", getClassName(), "/messages/DatetimeDataListFilter");
+        return getClassName();
     }
 
     @Override
