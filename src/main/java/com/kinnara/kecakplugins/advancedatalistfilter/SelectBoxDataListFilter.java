@@ -49,9 +49,12 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
                 options.addAll(optionsRowsSet);
             }
         }
+
+        String size=getPropertyString("size")+"px";
         
         dataModel.put("options", options);
         dataModel.put("multivalue", "true".equalsIgnoreCase(getPropertyString("multivalue")) ? "multiple" : "");
+        dataModel.put("size", size);
                 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
     }

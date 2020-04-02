@@ -10,18 +10,23 @@
     
     <script type="text/javascript">
     	$(document).ready(function(){
-	        var config = {
-			  '#${name!}Filter.chosen-select'           : {},
-			  '#${name!}Filter.chosen-select-deselect'  : {allow_single_deselect:true},
-			  '#${name!}Filter.chosen-select-no-single' : {disable_search_threshold:10},
-			  '#${name!}Filter.chosen-select-no-results': {no_results_text:'Oops, nothing found!'},
-			  '#${name!}Filter.chosen-select-width'     : {width:""}
-			}
+	        // var config = {
+			//  '#${name!}Filter.chosen-select'           : {},
+			//  '#${name!}Filter.chosen-select-deselect'  : {allow_single_deselect:true},
+			//  '#${name!}Filter.chosen-select-no-single' : {disable_search_threshold:10},
+			//  '#${name!}Filter.chosen-select-no-results': {no_results_text:'Oops, nothing found!'},
+			//  '#${name!}Filter.chosen-select-width'     : {width:"250 px"}
+			//}
 			
-			for (var selector in config) {
-			  $(selector).chosen({width : "110%"
-			  });
-			}
+			//for (var selector in config) {
+			//  $(selector).chosen({width : "110%"
+			//  });
+			//}
+
+			$(".chosen-select").chosen({allow_single_deselect:true,
+			                            no_results_text:'Oops, nothing found!',
+			                            width:'${size!}'
+			                            });
 		});
     </script>
 </div>
