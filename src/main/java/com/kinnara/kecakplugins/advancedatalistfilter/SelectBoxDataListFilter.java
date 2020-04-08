@@ -35,6 +35,18 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
                 options.add((Map) colObj);
             }
         }
+
+        boolean hasEmptyValue = options.stream()
+                .map(m -> m.get("value"))
+                .filter(Objects::nonNull)
+                .map(String::valueOf)
+                .anyMatch(String::isEmpty);
+
+        if(!hasEmptyValue) {
+            Map<String, String> empty = new HashMap<>();
+            empty.put("", "");
+            options.add(empty);
+        }
         
 
         	// load from property "optionsBinder"
