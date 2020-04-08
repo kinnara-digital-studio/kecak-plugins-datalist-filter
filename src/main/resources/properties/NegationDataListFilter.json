@@ -1,0 +1,14 @@
+[
+  {
+    "title": "@@negationDataListFilter.title@@",
+    "properties": [
+      {
+        "name" : "filter",
+        "label" : "@@negationDataListFilter.filter@@",
+        "type" : "elementselect",
+        "options_ajax" : "[CONTEXT_PATH]/web/property/json/getElements?classname=%s",
+        "url" : "[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions"
+      }
+    ]
+  }
+]
