@@ -5,7 +5,9 @@ import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.apps.form.model.FormAjaxOptionsBinder;
+import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
+import org.joget.apps.form.service.FormUtil;
 import org.joget.plugin.base.Plugin;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.property.model.PropertyEditable;
@@ -26,46 +28,13 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
         dataModel.put("label", label);
         dataModel.put("values", getValueSet(datalist, name, getPropertyString("defaultValue")));
 
-        // from property "options"
-        Object          columns = getProperty("options");
-        Collection<Map> options = new ArrayList<Map>();
-
-        if (columns != null) {
-            for (Object colObj : (Object[]) columns) {
-                options.add((Map) colObj);
-            }
-        }
-
-        boolean hasEmptyValue = options.stream()
-                .map(m -> m.get("value"))
-                .filter(Objects::nonNull)
-                .map(String::valueOf)
-                .anyMatch(String::isEmpty);
-
-        if(!hasEmptyValue) {
-            Map<String, String> empty = new HashMap<>();
-            empty.put("", "");
-            options.add(empty);
-        }
-        
-
-        	// load from property "optionsBinder"
-        Map<String, Object> optionsBinder = (Map<String, Object>)getProperty("optionsBinder");
-
-        if(optionsBinder != null){
-	    	String className = optionsBinder.get("className").toString();
-            Plugin optionsBinderPlugins = pluginManager.getPlugin(className);
-            if(optionsBinderPlugins != null && optionsBinder.get("properties") != null) {
-                ((PropertyEditable) optionsBinderPlugins).setProperties((Map) optionsBinder.get("properties"));
-                FormRowSet optionsRowsSet = ((FormAjaxOptionsBinder) optionsBinderPlugins).loadAjaxOptions(null);
-                options.addAll(optionsRowsSet);
-            }
-        }
+        FormRowSet options = Stream.concat(getOptions().stream(), getOptionsBinder().stream())
+                .collect(Collectors.toCollection(FormRowSet::new));
 
         String size=getPropertyString("size")+"px";
-        
+
         dataModel.put("options", options);
-        dataModel.put("multivalue", "true".equalsIgnoreCase(getPropertyString("multivalue")) ? "multiple" : "");
+        dataModel.put("multivalue", isMultivalue() ? "multiple" : "");
         dataModel.put("size", size);
                 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
@@ -139,4 +108,54 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
         return getClass().getPackage().getImplementationVersion();
     }
     //</editor-fold>
+
+    /**
+     * Get property "options"
+     *
+     * @return
+     */
+    private FormRowSet getOptions() {
+        return Optional.ofNullable((Object[])getProperty("options"))
+                .map(Arrays::stream)
+                .orElseGet(Stream::empty)
+                .map(o -> (Map<String, String>)o)
+                .map(m -> {
+                    FormRow formRow = new FormRow();
+                    formRow.setProperty(FormUtil.PROPERTY_VALUE, String.valueOf(m.get("value")));
+                    formRow.setProperty(FormUtil.PROPERTY_LABEL, String.valueOf(m.get("label")));
+                    return formRow;
+                })
+                .collect(Collectors.toCollection(FormRowSet::new));
+    }
+
+    /**
+     * Get property "optionsBinder"
+     *
+     * @return
+     */
+    private FormRowSet getOptionsBinder() {
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+
+        Map<String, Object> optionsBinder = (Map<String, Object>)getProperty("optionsBinder");
+
+        if(optionsBinder != null){
+            String className = optionsBinder.get("className").toString();
+            Plugin optionsBinderPlugins = pluginManager.getPlugin(className);
+            if(optionsBinderPlugins != null && optionsBinder.get("properties") != null) {
+                ((PropertyEditable) optionsBinderPlugins).setProperties((Map) optionsBinder.get("properties"));
+                return ((FormAjaxOptionsBinder) optionsBinderPlugins).loadAjaxOptions(null);
+            }
+        }
+
+        return new FormRowSet();
+    }
+
+    /**
+     * Get property "multivalue"
+     *
+     * @return
+     */
+    private boolean isMultivalue() {
+        return "true".equalsIgnoreCase(getPropertyString("multivalue"));
+    }
 }
