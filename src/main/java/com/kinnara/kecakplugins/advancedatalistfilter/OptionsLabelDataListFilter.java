@@ -49,19 +49,21 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
         Set<String> ids = getOptions().stream()
                 .filter(row -> Optional.of(row)
                         .map(r -> getPropertyFieldsLabel()
-                                && trimAndLower(r.getProperty(FormUtil.PROPERTY_LABEL)).contains(value)
+                                && multiValueContains(r.getProperty(FormUtil.PROPERTY_LABEL), value)
                                 || getPropertyFieldsValue()
-                                && trimAndLower(r.getProperty(FormUtil.PROPERTY_VALUE)).contains(value))
+                                && multiValueContains(r.getProperty(FormUtil.PROPERTY_VALUE), value))
                         .orElse(false))
                 .map(row -> row.getProperty(FormUtil.PROPERTY_VALUE))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         String query = ids.isEmpty() ? "1 <> 1" : ids.stream()
-                .map(s -> "?")
-                .collect(Collectors.joining(", ", columnName + " in (", ")"));
+                .map(s -> columnName + " like ?")
+                .collect(Collectors.joining(" or "));
 
-        String[] arguments = ids.toArray(new String[0]);
+        String[] arguments = ids.stream()
+                .map(s -> "%" + s + "%")
+                .toArray(String[]::new);
 
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
         queryObject.setOperator("and");
@@ -69,10 +71,6 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
         queryObject.setValues(arguments);
 
         return queryObject;
-    }
-
-    private String trimAndLower(String value) {
-        return Optional.ofNullable(value).map(String::trim).map(String::toLowerCase).orElse("");
     }
 
     @Override

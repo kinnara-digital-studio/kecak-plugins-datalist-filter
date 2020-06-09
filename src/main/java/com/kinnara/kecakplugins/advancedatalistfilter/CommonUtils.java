@@ -77,17 +77,6 @@ public interface CommonUtils {
     }
 
 
-    default Set<String> getSetOfWords(String string) {
-        return Optional.ofNullable(string)
-                .map(s -> s.split("[^\\w]+"))
-                .map(Arrays::stream)
-                .orElseGet(Stream::empty)
-                .filter(s -> !s.isEmpty())
-                .map(String::toLowerCase)
-                .peek(s -> LogUtil.info(getClass().getName(), "getSetOfWords ["+string+"] ["+s+"]"))
-                .collect(Collectors.toSet());
-    }
-
     default  <T> UnaryOperator<T> peek(@Nonnull Consumer<T> c) {
         return x -> {
             c.accept(x);
@@ -99,5 +88,30 @@ public interface CommonUtils {
     default <T extends String> boolean containsAll(@Nonnull Set<T> set1, @Nonnull Set<T> set2) {
         return set1.stream()
                 .anyMatch(s1 -> set2.stream().anyMatch(s2 -> s1.contains(s2)));
+    }
+
+
+    @Nonnull
+    default Set<String> getMultiValue(String value) {
+        return Optional.ofNullable(value)
+                .map(s -> s.split("[;,]"))
+                .map(Arrays::stream)
+                .orElseGet(Stream::empty)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+    }
+
+    default String trimAndLower(String value) {
+        return Optional.ofNullable(value).map(String::trim).map(String::toLowerCase).orElse("");
+    }
+
+    default boolean multiValueContains(String string1, String string2) {
+        Set<String> set1 = getMultiValue(trimAndLower(string1));
+        Set<String> set2 = getMultiValue(trimAndLower(string2));
+        boolean result = set1
+                .stream()
+                .anyMatch(s1 -> set2.stream()
+                        .anyMatch(s1::contains));
+        return result;
     }
 }
