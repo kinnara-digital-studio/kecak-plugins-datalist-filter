@@ -23,7 +23,7 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         @SuppressWarnings("rawtypes")
         Map dataModel = new HashMap();
-        dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX+name));
+        dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("label", label);
         dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
         dataModel.put("contextPath", WorkflowUtil.getHttpServletRequest().getContextPath());
@@ -38,7 +38,7 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
                 .map(String::toLowerCase)
                 .orElse("");
 
-        if(value.isEmpty()) {
+        if (value.isEmpty()) {
             DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
             queryObject.setOperator("and");
             queryObject.setQuery("1 = 1");
@@ -48,10 +48,10 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 
         Set<String> ids = getOptions().stream()
                 .filter(row -> Optional.of(row)
-                        .map(r -> r.getProperty(FormUtil.PROPERTY_LABEL))
-                        .map(String::trim)
-                        .map(String::toLowerCase)
-                        .map(s -> s.contains(value))
+                        .map(r -> getPropertyFieldsLabel()
+                                && trimAndLower(r.getProperty(FormUtil.PROPERTY_LABEL)).contains(value)
+                                || getPropertyFieldsValue()
+                                && trimAndLower(r.getProperty(FormUtil.PROPERTY_VALUE)).contains(value))
                         .orElse(false))
                 .map(row -> row.getProperty(FormUtil.PROPERTY_VALUE))
                 .filter(Objects::nonNull)
@@ -69,6 +69,10 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
         queryObject.setValues(arguments);
 
         return queryObject;
+    }
+
+    private String trimAndLower(String value) {
+        return Optional.ofNullable(value).map(String::trim).map(String::toLowerCase).orElse("");
     }
 
     @Override
@@ -110,5 +114,13 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 
     private String getDefaultValue() {
         return getPropertyString("defaultValue");
+    }
+
+    private boolean getPropertyFieldsValue() {
+        return getPropertyString("fields").contains("value");
+    }
+
+    private boolean getPropertyFieldsLabel() {
+        return getPropertyString("fields").contains("label");
     }
 }
