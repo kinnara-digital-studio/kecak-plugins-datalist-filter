@@ -8,12 +8,9 @@ import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.plugin.base.PluginManager;
 import org.springframework.context.ApplicationContext;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 
 /**
  * @author aristo
@@ -22,7 +19,7 @@ import java.util.function.UnaryOperator;
  *
  * Currently only works for textfield with 1 filter in datalist.
  */
-public class NegationDataListFilter extends DataListFilterTypeDefault {
+public class NegationDataListFilter extends DataListFilterTypeDefault implements CommonUtils {
     private DataListFilterType filter = null;
 
     @Override
@@ -86,12 +83,5 @@ public class NegationDataListFilter extends DataListFilterTypeDefault {
         }
 
         return filter;
-    }
-
-    private <T> UnaryOperator<T> peek(@Nonnull Consumer<T> c) {
-        return x -> {
-            c.accept(x);
-            return x;
-        };
     }
 }

@@ -5,9 +5,7 @@ import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.apps.form.model.FormAjaxOptionsBinder;
-import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
-import org.joget.apps.form.service.FormUtil;
 import org.joget.plugin.base.Plugin;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.property.model.PropertyEditable;
@@ -17,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
+public class SelectBoxDataListFilter extends DataListFilterTypeDefault implements CommonUtils {
 
     @Override
     public String getTemplate(DataList datalist, String name, String label) {
@@ -115,17 +113,7 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
      * @return
      */
     private FormRowSet getOptions() {
-        return Optional.ofNullable((Object[])getProperty("options"))
-                .map(Arrays::stream)
-                .orElseGet(Stream::empty)
-                .map(o -> (Map<String, String>)o)
-                .map(m -> {
-                    FormRow formRow = new FormRow();
-                    formRow.setProperty(FormUtil.PROPERTY_VALUE, String.valueOf(m.get("value")));
-                    formRow.setProperty(FormUtil.PROPERTY_LABEL, String.valueOf(m.get("label")));
-                    return formRow;
-                })
-                .collect(Collectors.toCollection(FormRowSet::new));
+        return getPropertyGridOptions("options");
     }
 
     /**
@@ -134,20 +122,7 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault {
      * @return
      */
     private FormRowSet getOptionsBinder() {
-        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
-
-        Map<String, Object> optionsBinder = (Map<String, Object>)getProperty("optionsBinder");
-
-        if(optionsBinder != null){
-            String className = optionsBinder.get("className").toString();
-            Plugin optionsBinderPlugins = pluginManager.getPlugin(className);
-            if(optionsBinderPlugins != null && optionsBinder.get("properties") != null) {
-                ((PropertyEditable) optionsBinderPlugins).setProperties((Map) optionsBinder.get("properties"));
-                return ((FormAjaxOptionsBinder) optionsBinderPlugins).loadAjaxOptions(null);
-            }
-        }
-
-        return new FormRowSet();
+        return getPropertyElementSelectOptions("optionsBinder");
     }
 
     /**

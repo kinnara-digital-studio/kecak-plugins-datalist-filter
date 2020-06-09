@@ -1,0 +1,32 @@
+[
+  {
+    "title" : "@@optionsLabel.title@@",
+    "properties" : [
+      {
+        "name" : "defaultValue",
+        "label" : "@@optionsLabel.defaultValue@@",
+        "type" : "textfield"
+      },
+      {
+        "name" : "options",
+        "label" : "@@optionsLabel.options@@",
+        "type" : "grid",
+        "columns" : [{
+          "key" : "value",
+          "label" : "@@optionsLabel.value@@"
+        },
+          {
+            "key" : "label",
+            "label" : "@@optionsLabel.label@@"
+          }]
+      },
+      {
+        "name" : "optionsBinder",
+        "label" : "@@optionsLabel.chooseOptionsBinder@@",
+        "type" : "elementselect",
+        "options_ajax" : "[CONTEXT_PATH]/web/property/json/getElements?classname=org.joget.apps.form.model.FormAjaxOptionsBinder",
+        "url" : "[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions"
+      }
+    ]
+  }
+]
