@@ -3,6 +3,10 @@
 		title : '@@multiSelectDataListFilter.title@@',
 		properties : [
 			{
+				name:'defaultValue',
+				label:'@@datalist.tfdlft.defaultValue@@',
+				type:'hidden'
+			},{
 				name:'columns',
 				label:'@@multiSelectDataListFilter.columns@@',
 				type:'multiselect',

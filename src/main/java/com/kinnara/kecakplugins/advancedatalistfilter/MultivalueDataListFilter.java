@@ -100,7 +100,9 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
     @Override
     public DataListFilterQueryObject getQueryObject(DataList dataList, String name) {
-        String[] values = getValues(dataList, name);
+        String[] values = getValues(dataList, name, getPropertyString("defaultValue"));
+
+        LogUtil.info(getClassName(), "getQueryObject : values ["+String.join(", ", values)+"]");
 
         if ((values == null ? Stream.<String>empty() : Arrays.stream(values))
                 .filter(Objects::nonNull)
