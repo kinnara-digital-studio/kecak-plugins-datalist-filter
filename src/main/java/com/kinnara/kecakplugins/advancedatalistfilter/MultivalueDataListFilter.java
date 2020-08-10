@@ -102,20 +102,21 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
     public DataListFilterQueryObject getQueryObject(DataList dataList, String name) {
         String[] values = getValues(dataList, name, getPropertyString("defaultValue"));
 
-        LogUtil.info(getClassName(), "getQueryObject : values ["+String.join(", ", values)+"]");
-
-        if ((values == null ? Stream.<String>empty() : Arrays.stream(values))
-                .filter(Objects::nonNull)
-                .allMatch(String::isEmpty)) {
-
-            return null;
-        }
-
         final StringBuilder query = new StringBuilder("1 <> 1");
         final List<String> args = new ArrayList<>();
 
-        Arrays.stream(values)
-                .flatMap(v -> Arrays.stream(v.split(";")))
+        String[] params = Optional.ofNullable(values)
+                .map(Arrays::stream)
+                .orElseGet(Stream::empty)
+                .map(s -> s.split(";"))
+                .flatMap(Arrays::stream)
+                .toArray(String[]::new);
+
+        if(params.length == 0) {
+            return null;
+        }
+
+        Arrays.stream(params)
                 .map(s -> {
                     String[] split = s.split(":", 2);
                     final DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
