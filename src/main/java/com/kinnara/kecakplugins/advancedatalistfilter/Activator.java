@@ -20,6 +20,8 @@ public class Activator implements BundleActivator {
         registrationList.add(context.registerService(SelectBoxDataListFilter.class.getName(), new SelectBoxDataListFilter(), null));
         registrationList.add(context.registerService(MultivalueDataListFilter.class.getName(), new MultivalueDataListFilter(), null));
         registrationList.add(context.registerService(NegationDataListFilter.class.getName(), new NegationDataListFilter(), null));
+        registrationList.add(context.registerService(DebugDataListFilter.class.getName(), new DebugDataListFilter(), null));
+        registrationList.add(context.registerService(ExactDataListFilter.class.getName(), new ExactDataListFilter(), null));
     }
 
     public void stop(BundleContext context) {

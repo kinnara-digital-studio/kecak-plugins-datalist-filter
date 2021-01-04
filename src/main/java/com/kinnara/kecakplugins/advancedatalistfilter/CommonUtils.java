@@ -5,7 +5,6 @@ import org.joget.apps.form.model.FormAjaxOptionsBinder;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
 import org.joget.apps.form.service.FormUtil;
-import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.Plugin;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.property.model.PropertyEditable;
@@ -69,7 +68,7 @@ public interface CommonUtils {
             Plugin optionsBinderPlugins = pluginManager.getPlugin(className);
             if(optionsBinderPlugins != null && optionsBinder.get("properties") != null) {
                 ((PropertyEditable) optionsBinderPlugins).setProperties((Map) optionsBinder.get("properties"));
-                return ((FormAjaxOptionsBinder) optionsBinderPlugins).loadAjaxOptions(null);
+                return ((FormAjaxOptionsBinder) optionsBinderPlugins).loadAjaxOptions(null, null);
             }
         }
 
@@ -87,7 +86,7 @@ public interface CommonUtils {
 
     default <T extends String> boolean containsAll(@Nonnull Set<T> set1, @Nonnull Set<T> set2) {
         return set1.stream()
-                .anyMatch(s1 -> set2.stream().anyMatch(s2 -> s1.contains(s2)));
+                .anyMatch(s1 -> set2.stream().anyMatch(s1::contains));
     }
 
 
