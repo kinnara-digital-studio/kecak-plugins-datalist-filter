@@ -24,7 +24,7 @@
         "name" : "optionsBinder",
         "label" : "@@optionsLabel.chooseOptionsBinder@@",
         "type" : "elementselect",
-        "options_ajax" : "[CONTEXT_PATH]/web/property/json/getElements?classname=org.joget.apps.form.model.FormAjaxOptionsBinder",
+        "options_ajax" : "[CONTEXT_PATH]/web/property/json/getElements?classname=org.joget.apps.form.model.FormLoadOptionsBinder",
         "url" : "[CONTEXT_PATH]/web/property/json[APP_PATH]/getPropertyOptions"
       },
       {
