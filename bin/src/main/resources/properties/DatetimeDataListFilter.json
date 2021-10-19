@@ -1,0 +1,45 @@
+[
+    {
+        title: '@@datalist.dtdlfp.title@@',
+        properties: [
+            {
+                name: 'showTime',
+                label: '@@datalist.dtdlfp.showTime@@',
+                type: 'checkbox',
+                value: '',
+                options : [
+                    {
+                        value : 'true',
+                        label : ''
+                    }
+                ]
+            },
+            {
+                name: 'singleValue',
+                label:  'Single Value',
+                description : '@@datalist.dtdlfp.singleValue.desc@@',
+                value : 'true',
+                type: 'checkbox',
+                options: [
+                    {
+                        value : 'true',
+                        label : ''
+                    }
+                ]
+            },
+            {
+                name : 'databaseDateFunction',
+                label : '@@datalist.dtdlfp.databaseDateFunction@@',
+                description : '@@datalist.dtdlfp.databaseDateFunction.desc@@',
+                type: 'textfield'
+            },
+            {
+                name : 'filterDateFunction',
+                label : '@@datalist.dtdlfp.filterDateFunction@@',
+                description : '@@datalist.dtdlfp.filterDateFunction.desc@@',
+                type: 'textfield'
+            }
+        ]
+    }
+]
+

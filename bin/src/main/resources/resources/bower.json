@@ -1,0 +1,21 @@
+{
+  "name": "kecak-plugins-datalist-filter",
+  "authors": [
+    "aristo_sh <aristo.hadisoeganda@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "smalot-bootstrap-datetimepicker": "^2.4.4",
+    "selectize": "0.12.6"
+  }
+}
