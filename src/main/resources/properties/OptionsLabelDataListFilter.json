@@ -8,19 +8,6 @@
         "type" : "textfield"
       },
       {
-        "name" : "options",
-        "label" : "@@optionsLabel.options@@",
-        "type" : "grid",
-        "columns" : [{
-          "key" : "value",
-          "label" : "@@optionsLabel.value@@"
-        },
-          {
-            "key" : "label",
-            "label" : "@@optionsLabel.label@@"
-          }]
-      },
-      {
         "name" : "optionsBinder",
         "label" : "@@optionsLabel.chooseOptionsBinder@@",
         "type" : "elementselect",
