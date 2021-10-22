@@ -46,20 +46,23 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 			queryObject.setValues(new String[0]);
 			return queryObject;
 		}
+		LogUtil.info(getClassName(), "[INITIAL VALUE] "+value);
 
 		String query = columnName+" LIKE ?";
+
+
 
 		String filterOn = (String) this.getProperty("fields");
 		String[] arrFilterOn = filterOn.split(";");
 		boolean filterByValue = false;
-//		boolean filterByLabel = false;
+		boolean filterByLabel = false;
 		for(int i=0; i<arrFilterOn.length;i++) {
 			if(arrFilterOn[i].equals("value")) {
 				filterByValue=true;
 			}
-//			if(arrFilterOn[i].equals("label")) {
-//				filterByLabel=true;
-//			}
+			if(arrFilterOn[i].equals("label")) {
+				filterByLabel=true;
+			}
 		}
 
 
@@ -88,6 +91,9 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 		queryObject.setOperator("OR");
 		queryObject.setQuery(query);
 		queryObject.setValues(arguments);
+		for(int i=0;i<queryObject.getValues().length;i++) {
+			LogUtil.info(getClassName(), "[VAL]"+i+" "+queryObject.getValues()[i]);
+		}
 		return queryObject;
 	}
 
@@ -123,8 +129,9 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 
 	@Nonnull
 	private FormRowSet getOptions() {
-		return Stream.concat(getPropertyGridOptions("options").stream(), getPropertyElementSelectOptions("optionsBinder").stream())
-				.distinct()
+		return getPropertyElementSelectOptions("optionsBinder")
+				.stream()
+//				.distinct()
 				.collect(FormRowSet::new, FormRowSet::add, FormRowSet::addAll);
 	}
 
