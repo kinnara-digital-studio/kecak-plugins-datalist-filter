@@ -46,7 +46,7 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 			queryObject.setValues(new String[0]);
 			return queryObject;
 		}
-		LogUtil.info(getClassName(), "[INITIAL VALUE] "+value);
+//		LogUtil.info(getClassName(), "[INITIAL VALUE] "+value);
 
 		String query = columnName+" LIKE ?";
 
@@ -55,14 +55,14 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 		String filterOn = (String) this.getProperty("fields");
 		String[] arrFilterOn = filterOn.split(";");
 		boolean filterByValue = false;
-		boolean filterByLabel = false;
+//		boolean filterByLabel = false;
 		for(int i=0; i<arrFilterOn.length;i++) {
 			if(arrFilterOn[i].equals("value")) {
 				filterByValue=true;
 			}
-			if(arrFilterOn[i].equals("label")) {
-				filterByLabel=true;
-			}
+//			if(arrFilterOn[i].equals("label")) {
+//				filterByLabel=true;
+//			}
 		}
 
 
@@ -76,24 +76,17 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 					break;
 				}
 			}
-//			if(filterByLabel) {
-//				if(formRow.getProperty(FormUtil.PROPERTY_LABEL).contains(value)) {
-//					value = formRow.getProperty(FormUtil.PROPERTY_VALUE);
-//					LogUtil.info(getClassName(), "[filterByLabel] "+formRow.getProperty(FormUtil.PROPERTY_LABEL)+" "+value);
-//					break;
-//				}
-//			}
 		}
 
-		String[] arguments = new String[] {"%"+value+"%"};
+		String[] arguments = new String[] {"%"+value.toLowerCase()+"%"};
 
 		DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
 		queryObject.setOperator("OR");
 		queryObject.setQuery(query);
 		queryObject.setValues(arguments);
-		for(int i=0;i<queryObject.getValues().length;i++) {
-			LogUtil.info(getClassName(), "[VAL]"+i+" "+queryObject.getValues()[i]);
-		}
+//		for(int i=0;i<queryObject.getValues().length;i++) {
+//			LogUtil.info(getClassName(), "[VAL]"+i+" "+queryObject.getValues()[i]);
+//		}
 		return queryObject;
 	}
 
@@ -129,10 +122,15 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 
 	@Nonnull
 	private FormRowSet getOptions() {
-		return getPropertyElementSelectOptions("optionsBinder")
-				.stream()
-//				.distinct()
-				.collect(FormRowSet::new, FormRowSet::add, FormRowSet::addAll);
+		FormRowSet newRowSet = new FormRowSet();
+		for (FormRow formRow : newRowSet) {
+			FormRow newFormRow = new FormRow();
+			newFormRow.setId(formRow.getId());
+			newFormRow.setProperty(FormUtil.PROPERTY_VALUE, formRow.getProperty(FormUtil.PROPERTY_VALUE).toLowerCase());
+			newFormRow.setProperty(FormUtil.PROPERTY_LABEL, formRow.getProperty(FormUtil.PROPERTY_LABEL).toLowerCase());
+			newRowSet.add(newFormRow);
+		}
+		return newRowSet;
 	}
 
 	private String getDefaultValue() {
