@@ -1,6 +1,5 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
-import org.joget.apps.app.service.AppPluginUtil;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
