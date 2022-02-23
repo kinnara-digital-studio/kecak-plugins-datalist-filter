@@ -10,6 +10,7 @@ import org.joget.plugin.base.PluginManager;
 import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,8 +50,15 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
             valueFrom = getValue(datalist, name + "_from", defaultValues.length < 1 ? null : defaultValues[0]);
             valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to", defaultValues.length < 2 ? null : defaultValues[1]);
         } else {
-            valueFrom = getValue(datalist, name + "_from");
-            valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to");
+            final String values = getValue(datalist, name);
+            if(values.contains(";")) {
+                String[] split = values.split(";");
+                valueFrom = Arrays.stream(split).findFirst().orElse("");
+                valueTo = Arrays.stream(split).skip(1).findFirst().orElse("");
+            } else {
+                valueFrom = getValue(datalist, name + "_from");
+                valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to");
+            }
         }
 
         final boolean showTime = "true".equals(getPropertyString("showTime"));

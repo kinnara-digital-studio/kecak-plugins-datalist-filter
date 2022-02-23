@@ -1,0 +1,25 @@
+[
+  {
+    "title": "@@valueLabelTextFieldDataListFilter.title@@",
+    "properties": [
+      {
+        "name": "formDefId",
+        "type": "selectbox",
+        "label": "@@valueLabelTextFieldDataListFilter.formDefId@@",
+        "options_ajax" : "[CONTEXT_PATH]/web/json/console/app[APP_PATH]]/forms/options"
+      },
+      {
+        "name": "valueField",
+        "type": "textfield",
+        "label": "@@valueLabelTextFieldDataListFilter.valueField@@",
+        "required": "true"
+      },
+      {
+        "name": "labelField",
+        "type": "textfield",
+        "label": "@@valueLabelTextFieldDataListFilter.labelField@@",
+        "required": "true"
+      }
+    ]
+  }
+]
