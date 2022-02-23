@@ -50,14 +50,14 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
             valueFrom = getValue(datalist, name + "_from", defaultValues.length < 1 ? null : defaultValues[0]);
             valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to", defaultValues.length < 2 ? null : defaultValues[1]);
         } else {
-            final String values = Optional.ofNullable(getValue(datalist, name)).orElse("");
-            if(values.contains(";")) {
-                String[] split = values.split(";");
+            final Optional<String> optValues = Optional.ofNullable(getValue(datalist, name));
+            if(optValues.isPresent()) {
+                String[] split = optValues.get().split(";");
                 valueFrom = Arrays.stream(split).findFirst().orElse("");
                 valueTo = Arrays.stream(split).skip(1).findFirst().orElse("");
             } else {
-                valueFrom = getValue(datalist, name + "_from");
-                valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to");
+                valueFrom = Optional.ofNullable(getValue(datalist, name + "_from")).orElse("");
+                valueTo = singleValue ? valueFrom : Optional.ofNullable(getValue(datalist, name + "_to")).orElse("");
             }
         }
 
