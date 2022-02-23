@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     private final static DateFormat hibernateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -49,7 +50,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
             valueFrom = getValue(datalist, name + "_from", defaultValues.length < 1 ? null : defaultValues[0]);
             valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to", defaultValues.length < 2 ? null : defaultValues[1]);
         } else {
-            final String values = getValue(datalist, name);
+            final String values = Optional.ofNullable(getValue(datalist, name)).orElse("");
             if(values.contains(";")) {
                 String[] split = values.split(";");
                 valueFrom = Arrays.stream(split).findFirst().orElse("");
