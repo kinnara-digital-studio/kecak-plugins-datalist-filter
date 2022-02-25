@@ -6,7 +6,7 @@
         "name": "formDefId",
         "type": "selectbox",
         "label": "@@valueLabelTextFieldDataListFilter.formDefId@@",
-        "options_ajax" : "[CONTEXT_PATH]/web/json/console/app[APP_PATH]]/forms/options"
+        "options_ajax" : "[CONTEXT_PATH]/web/json/console/app[APP_PATH]/forms/options"
       },
       {
         "name": "valueField",

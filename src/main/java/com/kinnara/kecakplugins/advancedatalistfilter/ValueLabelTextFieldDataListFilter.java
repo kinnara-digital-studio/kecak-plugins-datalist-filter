@@ -10,15 +10,15 @@ import org.joget.apps.form.dao.FormDataDao;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * @author aristo
- *
+ * <p>
  * Value Label TextField DataList Filter
  */
 public class ValueLabelTextFieldDataListFilter extends TextFieldDataListFilterType {
@@ -36,18 +36,20 @@ public class ValueLabelTextFieldDataListFilter extends TextFieldDataListFilterTy
         final String labelField = getPropertyString("labelField");
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
             final DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
-            final Set<String> values = Optional.ofNullable(formDataDao.find(formDefId, tableName, "where lower(" + labelField + ") like lower(?)", new String[]{'%' + value + '%'}, null, null, null, null))
+            final List<String> values = Optional.ofNullable(formDataDao.find(formDefId, tableName, "where lower(e.customProperties." + labelField + ") like lower(?)", new String[]{'%' + value + '%'}, null, null, null, null))
                     .map(Collection::stream)
                     .orElseGet(Stream::empty)
                     .map(r -> r.getProperty(valueField))
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
+                    .distinct()
+                    .collect(Collectors.toList());
 
-            if(values.isEmpty()) {
+            if (values.isEmpty()) {
                 queryObject.setQuery("lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?)");
                 queryObject.setValues(new String[]{'%' + value + '%'});
             } else {
-                queryObject.setQuery(values.stream().map(s -> "?").collect(Collectors.joining(", ", datalist.getBinder().getColumnName(name) + " in (", ")")));
+                queryObject.setQuery(values.stream().map(s -> "?").collect(Collectors.joining(", ", datalist.getBinder().getColumnName(name) + " in (", ") or lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?)")));
+                values.add(value);
                 queryObject.setValues(values.toArray(new String[0]));
             }
 
