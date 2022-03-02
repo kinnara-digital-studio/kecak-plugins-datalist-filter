@@ -27,8 +27,13 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("label", label);
         dataModel.put("dateFormat", showTime ? "yyyy-mm-dd hh:ii:ss" : "yyyy-mm-dd");
-        dataModel.put("valueFrom", getValue(datalist, name + "_from", ""));
-        dataModel.put("valueTo", getValue(datalist, name + "_to", ""));
+
+        final String[] defaultValue = AppUtil.processHashVariable(getPropertyString("defaultValue"), null, null, null).split(";", 2);
+        final String defaultValueFrom = Arrays.stream(defaultValue).findFirst().orElse("");
+        final String defaultValueTo = Arrays.stream(defaultValue).skip(1).findFirst().orElse("");
+
+        dataModel.put("valueFrom", getValue(datalist, name + "_from", defaultValueFrom));
+        dataModel.put("valueTo", getValue(datalist, name + "_to", defaultValueTo));
         dataModel.put("optionsBinder", getProperty("optionsBinder"));
         dataModel.put("className", getClassName());
         dataModel.put("minView", showTime ? "hour" : "month");
@@ -44,9 +49,10 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         final boolean singleValue = "true".equalsIgnoreCase(getPropertyString("singleValue"));
 
         String valueFrom, valueTo;
-        if(getPropertyString("defaultValue") != null && !getPropertyString("defaultValue").isEmpty()) {
+        final String defaultValue = AppUtil.processHashVariable(getPropertyString("defaultValue"), null, null, null);
+        if(!defaultValue.isEmpty()) {
             // more likely it is called from plugin kecak-plugins-datalist-api
-            String[] defaultValues = getPropertyString("defaultValue").split(";");
+            String[] defaultValues = defaultValue.split(";");
             valueFrom = getValue(datalist, name + "_from", defaultValues.length < 1 ? null : defaultValues[0]);
             valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to", defaultValues.length < 2 ? null : defaultValues[1]);
         } else {
