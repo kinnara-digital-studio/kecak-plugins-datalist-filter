@@ -48,7 +48,7 @@ public class ValueLabelTextFieldDataListFilter extends TextFieldDataListFilterTy
                 queryObject.setQuery("lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?)");
                 queryObject.setValues(new String[]{'%' + value + '%'});
             } else {
-                queryObject.setQuery(values.stream().map(s -> "?").collect(Collectors.joining(", ", datalist.getBinder().getColumnName(name) + " in (", ") or lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?)")));
+                queryObject.setQuery(values.stream().map(s -> "?").collect(Collectors.joining(", ", "(" + datalist.getBinder().getColumnName(name) + " in (", ") or lower(" + datalist.getBinder().getColumnName(name) + ") like lower(?))")));
                 values.add(value);
                 queryObject.setValues(values.toArray(new String[0]));
             }
