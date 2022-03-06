@@ -3,6 +3,11 @@
     "title": "@@valueLabelTextFieldDataListFilter.title@@",
     "properties": [
       {
+        "name": "defaultValue",
+        "type": "textfield",
+        "label": "@@valueLabelTextFieldDataListFilter.defaultValue@@"
+      },
+      {
         "name": "formDefId",
         "type": "selectbox",
         "label": "@@valueLabelTextFieldDataListFilter.formDefId@@",
