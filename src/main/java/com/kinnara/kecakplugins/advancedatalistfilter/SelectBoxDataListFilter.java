@@ -1,18 +1,36 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
+import com.kinnarastudio.commons.Try;
+import com.kinnarastudio.commons.jsonstream.JSONCollectors;
+import org.joget.apps.app.dao.DatalistDefinitionDao;
+import org.joget.apps.app.model.AppDefinition;
+import org.joget.apps.app.model.DatalistDefinition;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
+import org.joget.apps.datalist.model.DataListFilter;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
+import org.joget.apps.datalist.service.DataListService;
+import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
 import org.joget.plugin.base.PluginManager;
+import org.joget.plugin.base.PluginWebSupport;
+import org.joget.workflow.util.WorkflowUtil;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.kecak.apps.exception.ApiException;
+import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SelectBoxDataListFilter extends DataListFilterTypeDefault implements CommonUtils {
+public class SelectBoxDataListFilter extends DataListFilterTypeDefault implements PluginWebSupport, CommonUtils {
 
     @Override
     public String getTemplate(DataList datalist, String name, String label) {
@@ -23,7 +41,7 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
         dataModel.put("label", label);
         dataModel.put("values", getValueSet(datalist, name, getPropertyString("defaultValue")));
 
-        FormRowSet options = Stream.concat(getOptions().stream(), getOptionsBinder().stream())
+        FormRowSet options = getStreamOptions()
                 .collect(Collectors.toCollection(FormRowSet::new));
 
         String size=getPropertyString("size")+"px";
@@ -33,6 +51,10 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
         dataModel.put("size", size);
                 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
+    }
+
+    public Stream<FormRow> getStreamOptions() {
+        return Stream.concat(getOptions().stream(), getOptionsBinder().stream());
     }
 
     @Override
@@ -129,5 +151,120 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
      */
     private boolean isMultivalue() {
         return "true".equalsIgnoreCase(getPropertyString("multivalue"));
+    }
+
+    /**
+     * Web Service
+     *
+     * Execute retrieve data for options binder
+     *
+     * Parameters:
+     * - dataList : required, dataList ID
+     * - filterName : required, filter name
+     * - page : optional, starts from 1
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    @Override
+    public void webService(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        final AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
+        final int PAGE_SIZE = 10;
+        try {
+            final String dataListId = getParameter(request, "dataList");
+            final String filterName = getParameter(request, "filterName");
+            final String keyword = optParameter(request, "keyword").orElse("");
+            final int page = optParameter(request, "page")
+                    .map(Try.onFunction(Integer::valueOf))
+                    .orElse(0);
+
+            final int skip = page == 0 ? 0 : ((page - 1) * PAGE_SIZE);
+
+            final DataList dataList = getDataList(appDefinition, dataListId);
+            final SelectBoxDataListFilter filter = getFilter(dataList, filterName);
+
+            JSONArray jsonResponse = filter.getStreamOptions()
+                    .filter(r -> r.getProperty("label").toLowerCase(Locale.ROOT).contains(keyword.toLowerCase()))
+                    .skip(skip)
+                    .limit(PAGE_SIZE)
+                    .map(JSONObject::new)
+                    .collect(JSONCollectors.toJSONArray());
+
+            response.getWriter().write(jsonResponse.toString());
+
+        } catch (ApiException e) {
+            response.sendError(e.getErrorCode(), e.getMessage());
+        }
+    }
+
+    protected Optional<String> optParameter(HttpServletRequest request, String parameterName) {
+        return Optional.of(parameterName)
+                .map(request::getParameter)
+                .filter(s -> !s.isEmpty());
+    }
+
+    protected String getParameter(HttpServletRequest request, String parameterName) throws ApiException {
+        return optParameter(request, parameterName)
+                .orElseThrow(() -> new ApiException(HttpServletResponse.SC_BAD_REQUEST, "Parameter [" + parameterName + "] is not supplied"));
+    }
+
+    /**
+     * Generate datalist
+     *
+     * @param appDefinition
+     * @param dataListId
+     * @return
+     * @throws ApiException
+     */
+    @Nonnull
+    protected DataList getDataList(@Nonnull AppDefinition appDefinition, @Nonnull String dataListId) throws ApiException {
+        final ApplicationContext applicationContext = AppUtil.getApplicationContext();
+        final DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) applicationContext.getBean("datalistDefinitionDao");
+        final DataListService dataListService = (DataListService) applicationContext.getBean("dataListService");
+
+        // get dataList definition
+        DatalistDefinition datalistDefinition = datalistDefinitionDao.loadById(dataListId, appDefinition);
+        if (datalistDefinition == null) {
+            throw new ApiException(HttpServletResponse.SC_NOT_FOUND, "DataList Definition for dataList [" + dataListId + "] not found");
+        }
+
+        final DataList dataList = Optional.of(datalistDefinition)
+                .map(DatalistDefinition::getJson)
+                .map(it -> AppUtil.processHashVariable(it, null, null, null))
+                .map(dataListService::fromJson)
+                .orElseThrow(() -> new ApiException(HttpServletResponse.SC_BAD_REQUEST, "Error generating dataList [" + dataListId + "]"));
+
+        // check permission
+        if (!isAuthorize(dataList)) {
+            throw new ApiException(HttpServletResponse.SC_UNAUTHORIZED, "User [" + WorkflowUtil.getCurrentUsername() + "] is not authorized to access datalist [" + dataListId + "]");
+        }
+
+        return dataList;
+    }
+
+    final SelectBoxDataListFilter getFilter(@Nonnull DataList dataList, String filterName) throws ApiException {
+        return Optional.ofNullable(dataList)
+                .map(DataList::getFilters)
+                .map(Arrays::stream)
+                .orElseGet(Stream::empty)
+                .filter(f -> filterName.equals(f.getName()))
+                .map(DataListFilter::getType)
+                .findAny()
+                .filter(f -> f instanceof SelectBoxDataListFilter)
+                .map(f -> (SelectBoxDataListFilter) f)
+                .orElseThrow(() -> new ApiException(HttpServletResponse.SC_NOT_FOUND, "Filter [" + filterName + "] is not available in dataList [" + dataList.getId() + "]"));
+    }
+
+    protected boolean isAuthorize(@Nonnull DataList dataList) {
+        final ApplicationContext applicationContext = AppUtil.getApplicationContext();
+        final DataListService dataListService = (DataListService) applicationContext.getBean("dataListService");
+        final boolean isPermissionSet = dataList.getPermission() != null;
+        return !isPermissionSet && isDefaultUserToHavePermission() || isPermissionSet && dataListService.isAuthorize(dataList);
+    }
+
+    protected boolean isDefaultUserToHavePermission() {
+        return WorkflowUtil.isCurrentUserInRole(WorkflowUtil.ROLE_ADMIN);
     }
 }
