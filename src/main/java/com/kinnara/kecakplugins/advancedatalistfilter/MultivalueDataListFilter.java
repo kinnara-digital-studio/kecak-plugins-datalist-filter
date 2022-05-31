@@ -1,10 +1,10 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
+import com.kinnara.kecakplugins.advancedatalistfilter.exceptions.RestApiException;
 import org.joget.apps.app.dao.AppDefinitionDao;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.model.DatalistDefinition;
-import org.joget.apps.app.service.AppPluginUtil;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.*;
 import org.joget.apps.datalist.service.DataListService;
@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 
 /**
  * @author aristo
- *
+ * <p>
  * Free Text Filter
  * Filter as multivalue and multicolumn
  */
@@ -60,10 +60,10 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                     m.put("label", split.length < 2
                             ? s
                             : Arrays.stream(dataList.getColumns())
-                                    .filter(c -> split[0].equals(c.getName()))
-                                    .findAny()
-                                    .map(DataListColumn::getLabel)
-                                    .orElse(split[0]) + ":" + split[1]);
+                            .filter(c -> split[0].equals(c.getName()))
+                            .findAny()
+                            .map(DataListColumn::getLabel)
+                            .orElse(split[0]) + ":" + split[1]);
                     return m;
                 })
                 .collect(Collectors.toList());
@@ -76,20 +76,20 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         dataModel.put("placeholder", "Search: "
                 + ": "
                 + (getPropertyString("columns") == null
-                        ? Stream.<String>empty()
-                        : Arrays.stream(getPropertyString("columns").split(";")))
+                ? Stream.<String>empty()
+                : Arrays.stream(getPropertyString("columns").split(";")))
 
-                        // map column name to column label
-                        .map(s -> (dataList.getColumns() == null
-                                ? Stream.<DataListColumn>empty()
-                                : Arrays.stream(dataList.getColumns()))
-                                .filter(Objects::nonNull)
-                                .filter(c -> s.equals(dataList.getBinder().getColumnName(c.getName())))
-                                .map(DataListColumn::getLabel)
-                                .findAny()
-                                .orElse(s))
+                // map column name to column label
+                .map(s -> (dataList.getColumns() == null
+                        ? Stream.<DataListColumn>empty()
+                        : Arrays.stream(dataList.getColumns()))
+                        .filter(Objects::nonNull)
+                        .filter(c -> s.equals(dataList.getBinder().getColumnName(c.getName())))
+                        .map(DataListColumn::getLabel)
+                        .findAny()
+                        .orElse(s))
 
-                        .collect(Collectors.joining(", ")));
+                .collect(Collectors.joining(", ")));
         dataModel.put("messageLoadingMore", getPropertyString("messageLoadingMore"));
         dataModel.put("messageErrorLoading", getPropertyString("messageErrorLoading"));
         dataModel.put("messageNoResults", getPropertyString("messageNoResults"));
@@ -112,7 +112,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                 .flatMap(Arrays::stream)
                 .toArray(String[]::new);
 
-        if(params.length == 0) {
+        if (params.length == 0) {
             return null;
         }
 
@@ -153,7 +153,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                 });
 
         DataListFilterQueryObject result = new DataListFilterQueryObject();
-        result.setQuery("(" + query.toString() + ")");
+        result.setQuery("(" + query + ")");
         result.setValues(args.toArray(new String[0]));
         result.setOperator("AND");
 
@@ -193,11 +193,12 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
     /**
      * Generate json array with pattern
      * [
-     *  {
-     *    "id" : "[colName]:[value]"
-     *    "text" : "[colLabel]:[valueLabel]
-     *  }
+     * {
+     * "id" : "[colName]:[value]"
+     * "text" : "[colLabel]:[valueLabel]
+     * }
      * ]
+     *
      * @param request
      * @param response
      * @throws ServletException
@@ -213,42 +214,35 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
             // method for paging
             final AppDefinitionDao appDefinitionDao = (AppDefinitionDao) AppUtil.getApplicationContext().getBean("appDefinitionDao");
 
-            final String appId = request.getParameter("appId");
-            final String appVersion = request.getParameter("appVersion");
-            final String dataListId = request.getParameter("dataListId");
-            final String[] columnsParam = request.getParameterValues("columns");
-            @Nonnull final String[] columns = (columnsParam == null ? Stream.<String>empty() : Arrays.stream(columnsParam))
-                    .filter(Objects::nonNull)
-                    .flatMap(s -> Arrays.stream(s.split(";")))
-                    .toArray(String[]::new);
-            @Nonnull final String search = request.getParameter("search") == null ? "" : request.getParameter("search");
-            @Nonnull final Pattern searchPattern = Pattern.compile(search, Pattern.CASE_INSENSITIVE);
-            @Nonnull final long page = request.getParameter("page") == null ? 0l : Long.parseLong(request.getParameter("page"));
+            final String appId = optParameter(request, "appId").orElse("");
+            final String dataListId = getParameter(request, "dataListId");
+            final Collection<String> columns = getParameterValues(request, "columns");
+            final String search = optParameter(request, "search").orElse("");
+            final long page = optParameter(request, "page").map(Long::parseLong).orElse(1L);
 
-            final AppDefinition appDefinition = appDefinitionDao.loadVersion(appId, appVersion == null || "0".equals(appVersion) || AppDefinition.VERSION_LATEST.equalsIgnoreCase(appVersion) ? appDefinitionDao.getPublishedVersion(appId) : Long.parseLong(appVersion));
-            if(appDefinition == null) {
+            final long appVersion = optParameter(request, "appVersion")
+                    .map(Long::parseLong)
+                    .orElseGet(() -> appDefinitionDao.getPublishedVersion(appId));
+
+            final AppDefinition appDefinition = appId.isEmpty() ? AppUtil.getCurrentAppDefinition() : appDefinitionDao.loadVersion(appId, appVersion);
+            if (appDefinition == null) {
                 throw new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
             }
 
             AppUtil.setCurrentAppDefinition(appDefinition);
 
-            if(dataListId == null) {
-                throw new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Parameter [" + dataListId + "] not found");
-            }
+            final DataList dataList = Optional.ofNullable(generateDataList(appDefinition, dataListId))
+                    .orElseThrow(() -> new RestApiException(HttpServletResponse.SC_NOT_FOUND, "DataList [" + dataListId + "] not found"));
 
-            final DataList dataList = generateDataList(appDefinition, dataListId);
-            if (dataList == null) {
-                throw new RestApiException(HttpServletResponse.SC_NOT_FOUND, "DataList [" + dataListId + "] not found");
-            }
+            final DataListColumn[] dataListColumns = Optional.of(dataList)
+                    .map(DataList::getColumns)
+                    .orElseThrow(() -> new RestApiException(HttpServletResponse.SC_FORBIDDEN, "DataList [" + dataListId + "] don't have columns"));
 
-            if(dataList.getColumns() == null) {
-                throw new RestApiException(HttpServletResponse.SC_FORBIDDEN, "DataList [" + dataListId + "] don't have columns");
-            }
-
-            DataListColumn[] dataListColumns = dataList.getColumns();
             Arrays.sort(dataListColumns, Comparator.comparing(DataListColumn::getName));
 
-            Stream<Map<String, String>> streamOptionsBinder = Arrays.stream(columns)
+            final Pattern searchPattern = Pattern.compile(search, Pattern.CASE_INSENSITIVE);
+
+            final Stream<Map<String, String>> streamOptionsBinder = columns.stream()
                     .filter(Objects::nonNull)
                     .filter(s -> !s.isEmpty())
 
@@ -266,33 +260,32 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                             // seach for any formatter that has optionsBinder
                             .map(this::getOptionMap)
 
-                           // Map entry : field_value -> field_label
+                            // Map entry : field_value -> field_label
                             .flatMap(m -> m.entrySet().stream()
                                     // fiter by search query
                                     .filter(e -> searchPattern.matcher(e.getValue()).find()))
 
-                           // build result for each
-                           .map(e -> {
-                               Map<String, String> m = new HashMap<>();
-                               m.put("id",  c.getName() + ":" + e.getKey());
-                               m.put("text", c.getLabel() + ":" + e.getValue());
-                               return m;
-                           }));
+                            // build result for each
+                            .map(e -> {
+                                Map<String, String> m = new HashMap<>();
+                                m.put("id", c.getName() + ":" + e.getKey());
+                                m.put("text", c.getLabel() + ":" + e.getValue());
+                                return m;
+                            }));
 
-            DataListCollection<Map<String, Object>> rows = dataList.getRows();
+            final DataListCollection<Map<String, Object>> rows = dataList.getRows();
 
-            Stream<Map<String, String>> streamColumnData = (rows == null
-                    ? Stream.<Map<String, Object>>empty()
-                    : rows.stream())
-
+            final Stream<Map<String, String>> streamColumnData = Optional.ofNullable(rows)
+                    .map(Collection::stream)
+                    .orElseGet(Stream::empty)
                     .flatMap(m -> m.entrySet().stream())
-                    .filter(e -> Arrays.stream(columns).anyMatch(c -> c.equals(e.getKey())))
-                    .filter(e -> e != null && searchPattern.matcher(String.valueOf(e.getValue())).find())
+                    .filter(e -> columns.stream().anyMatch(c -> c.equals(e.getKey())))
+                    .filter(e -> searchPattern.matcher(String.valueOf(e.getValue())).find())
                     .map(e -> {
                         Map<String, String> m = new HashMap<>();
 
                         // ID contains FIELD_NAME:FIELD_VALUE
-                        m.put("id",  e.getKey() + ":" + e.getValue());
+                        m.put("id", e.getKey() + ":" + e.getValue());
 
                         // TEXT contains FIELD_LABEL:FIELD_VALUE
                         m.put("text", Stream.of(Arrays.binarySearch(dataListColumns, new DataListColumn(e.getKey(), "", false), Comparator.comparing(DataListColumn::getName)))
@@ -305,29 +298,28 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                         return m;
                     });
 
-            JSONArray jsonResults = new JSONArray(Stream.concat(streamColumnData, streamOptionsBinder)
+            final JSONArray jsonResults = new JSONArray(Stream.concat(streamColumnData, streamOptionsBinder)
                     .sorted(Comparator.comparing(m -> m.get("text")))
                     .distinct()
-                    .skip(((page == 0 ? 1 : page) - 1) * PAGE_SIZE)
+                    .skip((page - 1) * PAGE_SIZE)
                     .limit(PAGE_SIZE)
                     .collect(Collectors.toList()));
 
-            try {
-                JSONObject jsonPagination = new JSONObject();
-                jsonPagination.put("more", jsonResults.length() == PAGE_SIZE);
+            final JSONObject jsonPagination = new JSONObject();
+            jsonPagination.put("more", jsonResults.length() == PAGE_SIZE);
 
-                JSONObject jsonData = new JSONObject();
-                jsonData.put("results", jsonResults);
-                jsonData.put("pagination", jsonPagination);
+            JSONObject jsonData = new JSONObject();
+            jsonData.put("results", jsonResults);
+            jsonData.put("pagination", jsonPagination);
 
-                response.setContentType("application/json");
-                response.getWriter().write(jsonData.toString());
-            } catch (JSONException e) {
-                throw new RestApiException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            }
-        }catch (RestApiException e) {
-            LogUtil.warn(getClassName(), e.getMessage());
+            response.setContentType("application/json");
+            response.getWriter().write(jsonData.toString());
+        } catch (RestApiException e) {
+            LogUtil.error(getClassName(), e, e.getMessage());
             response.sendError(e.getErrorCode(), e.getMessage());
+        } catch (JSONException e) {
+            LogUtil.error(getClassName(), e, e.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
@@ -350,13 +342,13 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         }
 
         DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
-        if(dataList != null) {
+        if (dataList != null) {
             dataList.setDefaultPageSize(DataList.MAXIMUM_PAGE_SIZE);
             dataList.setFilters(new DataListFilter[0]);
             return dataList;
 
-        } else  {
-            LogUtil.warn(getClassName(), "Error generating dataList ["+dataListId+"]");
+        } else {
+            LogUtil.warn(getClassName(), "Error generating dataList [" + dataListId + "]");
         }
 
         return dataList;
@@ -370,14 +362,14 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         // collect from 'options' properties
         Object[] options = (Object[]) formatterPlugins.getProperty("options");
         (options == null ? Stream.empty() : Arrays.stream(options))
-                .map(o -> (Map<String, String>)o)
+                .map(o -> (Map<String, String>) o)
                 .filter(m -> m.get("value") != null && m.get("label") != null)
                 .forEach(m -> optionMap.put(m.get("value"), m.get("label")));
 
         // collect from 'optionsBinder'
         Map<String, Object> formatterOptionsBinder;
         FormBinder optionBinder;
-        if((formatterOptionsBinder = (Map<String, Object>) formatterPlugins.getProperty("optionsBinder")) != null
+        if ((formatterOptionsBinder = (Map<String, Object>) formatterPlugins.getProperty("optionsBinder")) != null
                 && formatterOptionsBinder.get("className") != null
                 && (optionBinder = (FormBinder) pluginManager.getPlugin(formatterOptionsBinder.get("className").toString())) != null) {
 
@@ -389,5 +381,42 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         }
 
         return optionMap;
+    }
+
+    /**
+     * Get required parameter
+     *
+     * @param request
+     * @param parameterName
+     * @return
+     * @throws RestApiException
+     */
+    public String getParameter(HttpServletRequest request, String parameterName) throws RestApiException {
+        return optParameter(request, parameterName)
+                .orElseThrow(() -> new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Parameter [" + parameterName + "] is required"));
+    }
+
+    /**
+     * Get optional parameter
+     *
+     * @param request
+     * @param parameterName
+     * @return
+     */
+    public Optional<String> optParameter(HttpServletRequest request, String parameterName) {
+        return Optional.of(parameterName)
+                .map(request::getParameter);
+    }
+
+    public Collection<String> getParameterValues(HttpServletRequest request, String parameterName) {
+        return Optional.of(parameterName)
+                .map(request::getParameterValues)
+                .map(Arrays::stream)
+                .orElseGet(Stream::empty)
+                .filter(Objects::nonNull)
+                .map(s -> s.split(";"))
+                .flatMap(Arrays::stream)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
     }
 }
