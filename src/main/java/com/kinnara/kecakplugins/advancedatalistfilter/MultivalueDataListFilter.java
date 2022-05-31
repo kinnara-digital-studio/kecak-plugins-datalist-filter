@@ -405,7 +405,8 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
      */
     public Optional<String> optParameter(HttpServletRequest request, String parameterName) {
         return Optional.of(parameterName)
-                .map(request::getParameter);
+                .map(request::getParameter)
+                .filter(s -> !s.isEmpty());
     }
 
     public Collection<String> getParameterValues(HttpServletRequest request, String parameterName) {
