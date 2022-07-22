@@ -5,7 +5,6 @@ import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.lib.TextFieldDataListFilterType;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
-import org.joget.commons.util.LogUtil;
 import org.joget.workflow.model.WorkflowProcess;
 import org.joget.workflow.model.WorkflowProcessLink;
 import org.joget.workflow.model.service.WorkflowManager;
@@ -18,6 +17,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Process Definition DataList Filter
+ *
+ * Filter form row based on currently running process. The filter may receive:
+ * - Process Instance ID, example: 1_app1_process1
+ * - Process ID, example: process1
+ * - Process version, example: 4
+ * - Complete Process ID, example: app1#1#process1
+ *
+ */
 public class ProcessDefinitionDataListFilter extends TextFieldDataListFilterType {
     @Override
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
