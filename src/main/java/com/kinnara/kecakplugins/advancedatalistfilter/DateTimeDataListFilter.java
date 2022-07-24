@@ -5,6 +5,7 @@ import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.plugin.base.PluginManager;
+import org.joget.workflow.model.service.WorkflowManager;
 
 import javax.annotation.Nonnull;
 import java.text.DateFormat;
@@ -15,7 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class DateTimeDataListFilter extends DataListFilterTypeDefault {
-    private final static DateFormat hibernateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    private final static DateFormat hibernateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @SuppressWarnings("unchecked")
@@ -44,7 +45,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
     @Override
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
-        DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
+        final DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
 
         final boolean singleValue = "true".equalsIgnoreCase(getPropertyString("singleValue"));
 

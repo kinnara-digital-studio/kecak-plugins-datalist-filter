@@ -1,0 +1,53 @@
+[
+    {
+        "title": "@@datalist.dtdlfp.title@@",
+        "properties": [
+            {
+                "name": "showTime",
+                "label": "@@datalist.dtdlfp.showTime@@",
+                "type": "checkbox",
+                "value": "",
+                "options" : [
+                    {
+                        "value" : "true",
+                        "label" : ""
+                    }
+                ]
+            },
+            {
+                "name": "singleValue",
+                "label":  "Single Value",
+                "description" : "@@datalist.dtdlfp.singleValue.desc@@",
+                "value" : "true",
+                "type": "checkbox",
+                "options": [
+                    {
+                        "value" : "true",
+                        "label" : ""
+                    }
+                ]
+            },
+            {
+                "label": "@@datalist.dtdlfp.defaultValue@@",
+                "type": "header"
+            },
+            {
+                "name": "defaultValue",
+                "label": "@@datalist.dtdlfp.defaultValue@@",
+                "description": "@@datalist.dtdlfp.defaultValue.desc@@",
+                "type": "textfield"
+            },
+            {
+                "label": "Workflow",
+                "type": "header"
+            },
+            {
+                "name": "activities",
+                "label": "Activities",
+                "description": "; delimited activities",
+                "type": "textfield"
+            }
+        ]
+    }
+]
+
