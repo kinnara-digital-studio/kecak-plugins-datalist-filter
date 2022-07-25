@@ -55,12 +55,12 @@
                 "required": "true",
                 "options": [
                     {
-                        "value": "Start Date",
-                        "label": "Activated"
+                        "value": "Activated",
+                        "label": "Start Date"
                     },
                     {
-                        "value": "Finished Date",
-                        "label": "Accepted"
+                        "value": "Accepted",
+                        "label": "Finished Date"
                     }
                 ]
             }
