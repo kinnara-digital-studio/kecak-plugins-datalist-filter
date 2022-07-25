@@ -43,24 +43,24 @@
             },
             {
                 "name": "activities",
-                "label": "Activities",
+                "label": "@@datalist.dtdlfp.activities@@",
                 "description": "; delimited activities",
                 "type": "textfield"
             },
             {
                 "name": "dateField",
-                "label": "Date Field",
+                "label": "@@datalist.dtdlfp.dateField@@",
                 "type": "radio",
                 "value": "Accepted",
                 "required": "true",
                 "options": [
                     {
                         "value": "Activated",
-                        "label": "Start Date"
+                        "label": "@@datalist.dtdlfp.dateField.Activated@@"
                     },
                     {
                         "value": "Accepted",
-                        "label": "Finished Date"
+                        "label": "@@datalist.dtdlfp.dateField.Accepted@@"
                     }
                 ]
             }

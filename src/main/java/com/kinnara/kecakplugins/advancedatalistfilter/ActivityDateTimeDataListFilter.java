@@ -156,7 +156,7 @@ public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
                 + " INNER JOIN SHKActivityStates activityStates ON activityStates.oid = activities.state "
                 + " INNER JOIN SHKProcessStates processStates ON processStates.oid = processes.state "
                 + " LEFT JOIN wf_process_link link ON link.processId = processes.id "
-                + " WHERE from_unixtime(floor(activities." + getPropertyDateField() + " / 1000)) BETWEEN ? AND ? "
+                + " WHERE from_unixtime(floor(activities." + getPropertyDateField() + " / 1000)) IS NOT NULL AND from_unixtime(floor(activities." + getPropertyDateField() + " / 1000)) BETWEEN ? AND ? "
                 + "     AND activityStates.Name <> 'closed.aborted' ";
 
         if(!activityIds.isEmpty()) {
@@ -167,9 +167,6 @@ public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
 
         try(final Connection con = ds.getConnection();
             final PreparedStatement ps = con.prepareStatement(query)) {
-
-//            ps.setDate(1, new java.sql.Date(from.getTime()));
-//            ps.setDate(2, new java.sql.Date(to.getTime()));
 
             final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             ps.setString(1, df.format(from));
