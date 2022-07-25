@@ -46,6 +46,23 @@
                 "label": "Activities",
                 "description": "; delimited activities",
                 "type": "textfield"
+            },
+            {
+                "name": "dateField",
+                "label": "Date Field",
+                "type": "radio",
+                "value": "Accepted",
+                "required": "true",
+                "options": [
+                    {
+                        "value": "Start Date",
+                        "label": "Activated"
+                    },
+                    {
+                        "value": "Finished Date",
+                        "label": "Accepted"
+                    }
+                ]
             }
         ]
     }

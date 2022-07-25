@@ -6,6 +6,7 @@ import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
+import org.joget.workflow.model.WorkflowActivity;
 import org.joget.workflow.model.service.WorkflowManager;
 import org.springframework.context.ApplicationContext;
 
@@ -155,7 +156,7 @@ public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
                 + " INNER JOIN SHKActivityStates activityStates ON activityStates.oid = activities.state "
                 + " INNER JOIN SHKProcessStates processStates ON processStates.oid = processes.state "
                 + " LEFT JOIN wf_process_link link ON link.processId = processes.id "
-                + " WHERE from_unixtime(floor(activities.Accepted / 1000)) BETWEEN ? AND ? "
+                + " WHERE from_unixtime(floor(activities." + getPropertyDateField() + " / 1000)) BETWEEN ? AND ? "
                 + "     AND activityStates.Name <> 'closed.aborted' ";
 
         if(!activityIds.isEmpty()) {
@@ -215,5 +216,9 @@ public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
 
     protected String getPropertyDefaultValue() {
         return getPropertyString("defaultValue");
+    }
+
+    protected String getPropertyDateField() {
+        return getPropertyString("dateField");
     }
 }
