@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
+
+    private final Collection<String> cacheIds = new HashSet<>();
+
     @Override
     public String getTemplate(DataList datalist, String name, String label) {
         final PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
@@ -147,6 +150,10 @@ public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
     }
 
     protected Collection<String> getIds(Date from, Date to, Collection<String> activityIds) {
+        if(!cacheIds.isEmpty()) {
+            return cacheIds;
+        }
+
         final ApplicationContext applicationContext = AppUtil.getApplicationContext();
         final DataSource ds = (DataSource) applicationContext.getBean("setupDataSource");
 
@@ -178,19 +185,15 @@ public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
             }
 
             try(final ResultSet rs = ps.executeQuery()) {
-                final Set<String> result = new HashSet<>();
-
                 while(rs.next()) {
-                    result.add(rs.getString(1));
+                    cacheIds.add(rs.getString(1));
                 }
-
-                return result;
             }
         } catch (SQLException e) {
             LogUtil.error(getClassName(), e, e.getMessage());
         }
 
-        return Collections.emptySet();
+        return cacheIds;
     }
 
     protected Set<String> getPropertyActivities() {
