@@ -172,8 +172,8 @@ public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
                     .collect(Collectors.joining(",", " AND activities.ActivityDefinitionId IN (", ")"));
         }
 
-        try(final Connection con = ds.getConnection();
-            final PreparedStatement ps = con.prepareStatement(query)) {
+        try(Connection con = ds.getConnection();
+            PreparedStatement ps = con.prepareStatement(query)) {
 
             final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             ps.setString(1, df.format(from));
@@ -184,7 +184,7 @@ public class ActivityDateTimeDataListFilter extends DataListFilterTypeDefault {
                 ps.setString(i++ + 3, activityId);
             }
 
-            try(final ResultSet rs = ps.executeQuery()) {
+            try(ResultSet rs = ps.executeQuery()) {
                 while(rs.next()) {
                     cacheIds.add(rs.getString(1));
                 }
