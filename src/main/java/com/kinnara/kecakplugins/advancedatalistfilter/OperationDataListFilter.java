@@ -16,7 +16,8 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
     public String getTemplate(DataList datalist, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         Map dataModel = new HashMap();
-        dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX+name));
+        dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
+        dataModel.put("defaultOperationName", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "defaultOperationName"));
         dataModel.put("label", label);
         dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
         dataModel.put("operation", getValue(datalist, "defaultOperation", getPropertyString("defaultOperation")));
@@ -28,7 +29,7 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
         String value = getValue(datalist, name, getPropertyString("defaultValue"));
-        String operation = getValue(datalist, "defaultOperation", getPropertyString("defaultOperation"));
+        String operation = getValue(datalist, "defaultOperationName", getPropertyString("defaultOperation"));
         LogUtil.info(getClassName(), "operation : " + operation);
         LogUtil.info(getClassName(), "value : " + value);
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
