@@ -32,9 +32,9 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
             String baseQuery = " " + datalist.getBinder().getColumnName(name) + " ";
             switch(operation) {
-                case "eq" :
-                    baseQuery += " = ?";
-                    break;
+//                case "eq" :
+//                    baseQuery += " = ?";
+//                    break;
                 case "lt" :
                     baseQuery += " < ?";
                     break;
@@ -50,6 +50,7 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
                 case "neq" :
                     baseQuery += " <> ?";
                     break;
+                default:baseQuery += " = ?";break;
             }
             queryObject.setQuery(baseQuery);
             queryObject.setValues(new String[]{value});
