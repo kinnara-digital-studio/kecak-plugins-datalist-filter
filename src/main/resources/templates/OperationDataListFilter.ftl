@@ -1,6 +1,6 @@
 <script type="text/javascript" src="${contextPath}/plugin/org.joget.apps.datalist.lib.TextFieldDataListFilterType/js/jquery.placeholder.min.js"></script>
 
-      <select name="defaultOperation">
+      <select name="${operationName!}">
           <option value="eq" ${(operation == 'eq')?then('selected', '')}>&#61;</option>
           <option value="lte" ${(operation == 'lte')?then('selected', '')}>&lt;&#61;</option>
           <option value="lt" ${(operation == 'lt')?then('selected', '')}>&lt;</option>
