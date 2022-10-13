@@ -10,7 +10,6 @@
                         <option value="neq" ${(operation == "neq")?then("selected", "")}>&lt;&gt;</option>
                     </select>
               </span>
-              <h1>${opType!}</h1>
               <input id="${name!}" name="${name!}" type="${opType!}" class="form-control" size="10" value="${value!?html}" placeholder="${label!?html}" class="form-control"/>
           </div>
     <script type="text/javascript">
