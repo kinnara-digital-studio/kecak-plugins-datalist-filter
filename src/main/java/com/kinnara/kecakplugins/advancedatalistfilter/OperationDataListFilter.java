@@ -4,7 +4,6 @@ import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.lib.TextFieldDataListFilterType;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
-import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.util.WorkflowUtil;
 
@@ -21,7 +20,7 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
         dataModel.put("operationName", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "operationName_"+name));
         dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
         dataModel.put("operation", getValue(datalist, "operationName_"+name, getPropertyString("defaultOperation")));
-        dataModel.put("OpType", (opType.equals("number")?"number":"text"));
+        dataModel.put("opType", (opType.equals("number")?"number":"text"));
         dataModel.put("label", label);
         dataModel.put("dateFormat", "yyyy-mm-dd");
         dataModel.put("isDate", (opType.equals("date")?"datetimepicker":""));
@@ -36,11 +35,6 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
         String value = getValue(datalist, name, getPropertyString("defaultValue"));
         String operation = getValue(datalist, "operationName_"+name, getPropertyString("defaultOperation"));
         String opType = getPropertyString("operationType");
-        LogUtil.info(getClassName(), "name : " + name);
-        LogUtil.info(getClassName(), "op name : " + "operationName_" +name);
-        LogUtil.info(getClassName(), "value : " + value);
-        LogUtil.info(getClassName(), "operation : " + operation);
-        LogUtil.info(getClassName(), "type : " + opType);
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
             String baseQuery = " cast("  + datalist.getBinder().getColumnName(name) + " as "+ (opType.equals("number")?"big_decimal":"string") + ")";
             switch(operation) {
