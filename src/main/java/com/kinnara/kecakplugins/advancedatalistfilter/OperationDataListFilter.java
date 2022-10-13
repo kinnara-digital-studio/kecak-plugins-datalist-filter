@@ -15,12 +15,17 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
     @Override
     public String getTemplate(DataList datalist, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        String opType =  getPropertyString("operationType");
         Map dataModel = new HashMap();
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
-        dataModel.put("operationName", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "operationName"));
-        dataModel.put("label", label);
+        dataModel.put("operationName", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "operationName_"+name));
         dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
-        dataModel.put("operation", getValue(datalist, "defaultOperation", getPropertyString("defaultOperation")));
+        dataModel.put("operation", getValue(datalist, "operationName_"+name, getPropertyString("defaultOperation")));
+        dataModel.put("OpType", (opType.equals("number")?"number":"text"));
+        dataModel.put("label", label);
+        dataModel.put("dateFormat", "yyyy-mm-dd");
+        dataModel.put("isDate", (opType.equals("date")?"datetimepicker":""));
+
         dataModel.put("contextPath", WorkflowUtil.getHttpServletRequest().getContextPath());
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/OperationDataListFilter.ftl", null);
     }
@@ -29,33 +34,34 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
         String value = getValue(datalist, name, getPropertyString("defaultValue"));
-        String operation = getValue(datalist, "operationName", getPropertyString("defaultOperation"));
-        LogUtil.info(getClassName(), "operation : " + operation);
+        String operation = getValue(datalist, "operationName_"+name, getPropertyString("defaultOperation"));
+        String opType = getPropertyString("operationType");
+        LogUtil.info(getClassName(), "name : " + name);
+        LogUtil.info(getClassName(), "op name : " + "operationName_" +name);
         LogUtil.info(getClassName(), "value : " + value);
+        LogUtil.info(getClassName(), "operation : " + operation);
+        LogUtil.info(getClassName(), "type : " + opType);
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
-            String baseQuery = " " + datalist.getBinder().getColumnName(name) + " ";
+            String baseQuery = " cast("  + datalist.getBinder().getColumnName(name) + " as "+ (opType.equals("number")?"big_decimal":"string") + ")";
             switch(operation) {
-//                case "eq" :
-//                    baseQuery += " = ?";
-//                    break;
                 case "lt" :
-                    baseQuery += " < ?";
+                    baseQuery += " < cast(? as " ;
                     break;
                 case "lte" :
-                    baseQuery += " <= ?";
+                    baseQuery += " <= cast(? as " ;
                     break;
                 case "gt" :
-                    baseQuery += " > ?";
+                    baseQuery += " > cast(? as " ;
                     break;
                 case "gte" :
-                    baseQuery += " >= ?";
+                    baseQuery += " >= cast(? as " ;
                     break;
                 case "neq" :
-                    baseQuery += " <> ?";
+                    baseQuery += " <> cast(? as " ;
                     break;
-                default:baseQuery += " = ?";break;
+                default:baseQuery += " = cast(? as " ;break;
             }
-            queryObject.setQuery(baseQuery);
+            queryObject.setQuery(baseQuery + (opType.equals("number")?"big_decimal":"string") + ")");
             queryObject.setValues(new String[]{value});
             return queryObject;
         }

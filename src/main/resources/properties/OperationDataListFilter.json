@@ -8,6 +8,26 @@
         "label": "@@operation.defaultValue@@"
       },
       {
+        "name": "operationType",
+        "type": "selectBox",
+        "label": "@@operation.operationType@@",
+        "required" : "true",
+        "options" : [
+          {
+            "value" : "number",
+            "label" : "Number"
+          },
+          {
+            "value" : "text",
+            "label" : "Text"
+          },
+          {
+            "value" : "date",
+            "label" : "Date"
+          }
+        ]
+      },
+      {
         "name":"defaultOperation",
         "label":"@@operation.options@@",
         "type":"selectBox",
