@@ -91,5 +91,4 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
     public String getPropertyOptions() {
         return AppUtil.readPluginResource(getClass().getName(), "/properties/OperationDataListFilter.json", null, false, "/messages/OperationDataListFilter");
     }
-
 }
