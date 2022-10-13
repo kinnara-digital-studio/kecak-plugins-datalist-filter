@@ -4,6 +4,7 @@ import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.lib.TextFieldDataListFilterType;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
+import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.util.WorkflowUtil;
 
@@ -18,7 +19,7 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX+name));
         dataModel.put("label", label);
         dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
-        dataModel.put("operation", getValue(datalist, name, getPropertyString("defaultOperation")));
+        dataModel.put("operation", getValue(datalist, "defaultOperation", getPropertyString("defaultOperation")));
         dataModel.put("contextPath", WorkflowUtil.getHttpServletRequest().getContextPath());
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/OperationDataListFilter.ftl", null);
     }
@@ -27,8 +28,9 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
         String value = getValue(datalist, name, getPropertyString("defaultValue"));
-        String operation = getValue(datalist, name, getPropertyString("defaultOperation"));
-
+        String operation = getValue(datalist, "defaultOperation", getPropertyString("defaultOperation"));
+        LogUtil.info(getClassName(), "operation : " + operation);
+        LogUtil.info(getClassName(), "value : " + value);
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
             String baseQuery = " " + datalist.getBinder().getColumnName(name) + " ";
             switch(operation) {
