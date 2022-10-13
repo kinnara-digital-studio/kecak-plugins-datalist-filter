@@ -1,0 +1,43 @@
+[
+  {
+    "title": "@@operation.title@@",
+    "properties": [
+      {
+        "name": "defaultValue",
+        "type": "textfield",
+        "label": "@@operation.defaultValue@@"
+      },
+      {
+        "name":"defaultOperation",
+        "label":"@@operation.options@@",
+        "type":"selectBox",
+        "options":[
+          {
+            "value": "eq",
+            "label": "="
+          },
+          {
+            "value": "lte",
+            "label" : "<="
+          },
+          {
+            "value": "gte",
+            "label" : ">="
+          },
+          {
+            "value": "neq",
+            "label" : "<>"
+          },
+          {
+            "value": "gt",
+            "label": ">"
+          },
+          {
+            "value": "lt",
+            "label" : "<"
+          }
+        ]
+      }
+    ]
+  }
+]
