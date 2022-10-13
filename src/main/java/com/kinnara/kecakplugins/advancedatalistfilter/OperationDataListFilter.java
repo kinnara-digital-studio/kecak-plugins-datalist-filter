@@ -15,6 +15,7 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
     public String getTemplate(DataList datalist, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         String opType =  getPropertyString("operationType");
+
         Map dataModel = new HashMap();
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("operationName", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "operationName_"+name));
@@ -24,7 +25,6 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
         dataModel.put("label", label);
         dataModel.put("dateFormat", "yyyy-mm-dd");
         dataModel.put("isDate", (opType.equals("date")?"datetimepicker":""));
-
         dataModel.put("contextPath", WorkflowUtil.getHttpServletRequest().getContextPath());
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/OperationDataListFilter.ftl", null);
     }
@@ -36,26 +36,27 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
         String operation = getValue(datalist, "operationName_"+name, getPropertyString("defaultOperation"));
         String opType = getPropertyString("operationType");
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
-            String baseQuery = " cast("  + datalist.getBinder().getColumnName(name) + " as "+ (opType.equals("number")?"big_decimal":"string") + ")";
+            String caseValue = opType.equals("number")?"big_decimal":(opType.equals("date")? "date" : "string");
+            String baseQuery = " cast("  + datalist.getBinder().getColumnName(name) + " as "+ caseValue + ")";
             switch(operation) {
                 case "lt" :
-                    baseQuery += " < cast(? as " ;
+                    baseQuery += " < " ;
                     break;
                 case "lte" :
-                    baseQuery += " <= cast(? as " ;
+                    baseQuery += " <= " ;
                     break;
                 case "gt" :
-                    baseQuery += " > cast(? as " ;
+                    baseQuery += " > " ;
                     break;
                 case "gte" :
-                    baseQuery += " >= cast(? as " ;
+                    baseQuery += " >= " ;
                     break;
                 case "neq" :
-                    baseQuery += " <> cast(? as " ;
+                    baseQuery += " <> " ;
                     break;
-                default:baseQuery += " = cast(? as " ;break;
+                default:baseQuery += " = " ;break;
             }
-            queryObject.setQuery(baseQuery + (opType.equals("number")?"big_decimal":"string") + ")");
+            queryObject.setQuery(baseQuery + " cast( ? as " + caseValue + ")");
             queryObject.setValues(new String[]{value});
             return queryObject;
         }
