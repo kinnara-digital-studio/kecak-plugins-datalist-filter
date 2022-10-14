@@ -10,7 +10,7 @@ import org.joget.workflow.util.WorkflowUtil;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OperationDataListFilter extends TextFieldDataListFilterType {
+public class OperatorDataListFilter extends TextFieldDataListFilterType {
     @Override
     public String getTemplate(DataList datalist, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
@@ -23,7 +23,7 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
         dataModel.put("opType", getPropertyString("operationType"));
         dataModel.put("label", label);
         dataModel.put("contextPath", WorkflowUtil.getHttpServletRequest().getContextPath());
-        return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/OperationDataListFilter.ftl", null);
+        return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/OperatorDataListFilter.ftl", null);
     }
 
     @Override
@@ -87,6 +87,6 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
 
     @Override
     public String getPropertyOptions() {
-        return AppUtil.readPluginResource(getClass().getName(), "/properties/OperationDataListFilter.json", null, false, "/messages/OperationDataListFilter");
+        return AppUtil.readPluginResource(getClass().getName(), "/properties/OperatorDataListFilter.json", null, false, "/messages/OperationDataListFilter");
     }
 }
