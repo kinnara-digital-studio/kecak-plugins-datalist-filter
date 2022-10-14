@@ -16,6 +16,7 @@
   ],
   "dependencies": {
     "smalot-bootstrap-datetimepicker": "^2.4.4",
-    "selectize": "0.12.6"
+    "selectize": "0.12.6",
+    "select2": "^4.0.5"
   }
 }

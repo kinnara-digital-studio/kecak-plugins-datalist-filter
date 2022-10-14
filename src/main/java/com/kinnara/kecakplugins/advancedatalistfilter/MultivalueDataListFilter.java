@@ -162,7 +162,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
     @Override
     public String getName() {
-        return getClassName();
+        return getLabel();
     }
 
     @Override
@@ -177,7 +177,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
     @Override
     public String getLabel() {
-        return "Free Text";
+        return "Multi-value Text";
     }
 
     @Override
