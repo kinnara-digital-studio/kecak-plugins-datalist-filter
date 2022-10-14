@@ -14,17 +14,14 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
     @Override
     public String getTemplate(DataList datalist, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
-        String opType =  getPropertyString("operationType");
 
         Map dataModel = new HashMap();
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("operationName", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "operationName_"+name));
         dataModel.put("value", getValue(datalist, name, getPropertyString("defaultValue")));
         dataModel.put("operation", getValue(datalist, "operationName_"+name, getPropertyString("defaultOperation")));
-        dataModel.put("opType", (opType.equals("number")?"number":"text"));
+        dataModel.put("opType", getPropertyString("operationType"));
         dataModel.put("label", label);
-        dataModel.put("dateFormat", "yyyy-mm-dd");
-        dataModel.put("isDate", (opType.equals("date")?"datetimepicker":""));
         dataModel.put("contextPath", WorkflowUtil.getHttpServletRequest().getContextPath());
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/OperationDataListFilter.ftl", null);
     }
@@ -36,7 +33,7 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
         String operation = getValue(datalist, "operationName_"+name, getPropertyString("defaultOperation"));
         String opType = getPropertyString("operationType");
         if (datalist != null && datalist.getBinder() != null && value != null && !value.isEmpty()) {
-            String caseValue = opType.equals("number")?"big_decimal":(opType.equals("date")? "date" : "string");
+            String caseValue = opType.equals("number")?"big_decimal": "string";
             String baseQuery = " cast("  + datalist.getBinder().getColumnName(name) + " as "+ caseValue + ")";
             switch(operation) {
                 case "lt" :
@@ -80,7 +77,7 @@ public class OperationDataListFilter extends TextFieldDataListFilterType {
 
     @Override
     public String getLabel() {
-        return "Operation Filter";
+        return "Operator Filter";
     }
 
     @Override

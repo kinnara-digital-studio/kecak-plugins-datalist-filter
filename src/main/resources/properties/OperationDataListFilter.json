@@ -20,10 +20,6 @@
           {
             "value" : "text",
             "label" : "Text"
-          },
-          {
-            "value" : "date",
-            "label" : "Date"
           }
         ]
       },

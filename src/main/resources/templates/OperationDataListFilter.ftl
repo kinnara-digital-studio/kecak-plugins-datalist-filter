@@ -9,12 +9,10 @@
                 <option value="neq" ${(operation == "neq")?then("selected", "")}>&lt;&gt;</option>
     </select>
     </span><span class="filter-cell" style="padding-left:0px !important">
-        <input id="${name!}" name="${name!}" type="${opType!}" class="form-control ${isDate!}" size="5" value="${value!?html}" placeholder="${label!?html}" class="form-control"/>
+        <input id="${name!}" name="${name!}" type="${opType!}" class="form-control" size="5" value="${value!?html}" placeholder="${label!?html}" class="form-control"/>
 
    <script type="text/javascript">
         $(document).ready(function(){
             $('#${name!}').placeholder();
-
-
         });
     </script>
