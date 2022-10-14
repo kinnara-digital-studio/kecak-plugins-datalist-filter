@@ -1,0 +1,64 @@
+[
+  {
+    "title": "@@multiValue.title@@",
+    "properties": [
+      {
+        "name": "columns",
+        "label": "@@multiValue.columns@@",
+        "type": "Grid",
+        "columns" : [
+          { "key" : "column", "label" : "Column", "type" : "textField", "required": "true"},
+          {
+            "key" : "type", "label" : "type", "type" : "selectBox", "required": "true",
+            "options" : [
+              {
+                "value" : "number",
+                "label" : "Number"
+              },
+              {
+                "value" : "text",
+                "label" : "Text"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name" : "messageSearching",
+        "label" : "@@form.selectbox.messageSearching@@",
+        "type" : "textField",
+        "required" : "true",
+        "value" : "Searching...",
+        "control_field" : "modernStyle",
+        "control_value" : "true"
+      },
+      {
+        "name" : "messageLoadingMore",
+        "label" : "@@form.selectbox.messageLoadingMore@@",
+        "type" : "textField",
+        "required" : "true",
+        "value" : "Loading More...",
+        "control_field" : "modernStyle",
+        "control_value" : "true"
+      },
+      {
+        "name" : "messageNoResults",
+        "label" : "@@form.selectbox.messageNoResults@@",
+        "type" : "textField",
+        "required" : "true",
+        "value" : "No Results Found",
+        "control_field" : "modernStyle",
+        "control_value" : "true"
+      },
+      {
+        "name" : "messageErrorLoading",
+        "label" : "@@form.selectbox.messageErrorLoading@@",
+        "type" : "textField",
+        "required" : "true",
+        "value" : "Error Loading",
+        "control_field" : "modernStyle",
+        "control_value" : "true"
+      }
+    ]
+  }
+]
