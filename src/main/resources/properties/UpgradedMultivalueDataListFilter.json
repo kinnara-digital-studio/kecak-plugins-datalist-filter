@@ -7,7 +7,7 @@
         "label": "@@multiValue.columns@@",
         "type": "Grid",
         "columns" : [
-          { "key" : "column", "label" : "Column", "type" : "textField", "required": "true"},
+          { "key" : "column", "label" : "Column", "type" : "selectBox", "options_callback" : "DatalistBuilder.getColumnOptions","required": "true"},
           {
             "key" : "type", "label" : "type", "type" : "selectBox", "required": "true",
             "options" : [

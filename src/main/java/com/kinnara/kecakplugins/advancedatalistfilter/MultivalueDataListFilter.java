@@ -44,6 +44,8 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
     public String getTemplate(DataList dataList, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
+        String columnList = getPropertyString("columns");
+        LogUtil.info(getClassName(), "column in multi : " + columnList);
 
         Map dataModel = new HashMap();
         dataModel.put("name", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));

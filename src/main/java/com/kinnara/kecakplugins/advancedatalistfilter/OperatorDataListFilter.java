@@ -9,6 +9,7 @@ import org.joget.workflow.util.WorkflowUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 public class OperatorDataListFilter extends TextFieldDataListFilterType {
     @Override
@@ -67,7 +68,10 @@ public class OperatorDataListFilter extends TextFieldDataListFilterType {
 
     @Override
     public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/OperatorDataListFilter");
+        String buildNumber = resourceBundle.getString("buildNumber");
+        return getClass().getPackage().getImplementationVersion() + " " + buildNumber;
     }
 
     @Override

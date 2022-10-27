@@ -11,7 +11,15 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            $("[name^='${name}']").datetimepicker({
+            $("#${name}_from").datetimepicker({
+                format        : "${dateFormat}",
+                autoclose     : true,
+                todayBtn      : true,
+                pickerPosition: "bottom-left",
+                minView       : '${minView}'
+            });
+
+            $("#${name}_to").datetimepicker({
                 format        : "${dateFormat}",
                 autoclose     : true,
                 todayBtn      : true,

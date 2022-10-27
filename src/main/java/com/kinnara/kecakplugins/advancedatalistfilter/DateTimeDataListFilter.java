@@ -5,15 +5,11 @@ import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.plugin.base.PluginManager;
-import org.joget.workflow.model.service.WorkflowManager;
 
 import javax.annotation.Nonnull;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     private final static DateFormat hibernateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -141,6 +137,9 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
     @Override
     public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/OperatorDataListFilter");
+        String buildNumber = resourceBundle.getString("buildNumber");
+        return getClass().getPackage().getImplementationVersion() + " " + buildNumber;
     }
 }

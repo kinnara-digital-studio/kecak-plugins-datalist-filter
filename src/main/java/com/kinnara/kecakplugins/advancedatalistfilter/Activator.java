@@ -26,6 +26,7 @@ public class Activator implements BundleActivator {
         registrationList.add(context.registerService(ValueLabelTextFieldDataListFilter.class.getName(), new ValueLabelTextFieldDataListFilter(), null));
         registrationList.add(context.registerService(ProcessDefinitionDataListFilter.class.getName(), new ProcessDefinitionDataListFilter(), null));
         registrationList.add(context.registerService(OperatorDataListFilter.class.getName(), new OperatorDataListFilter(), null));
+        registrationList.add(context.registerService(UpgradedMultivalueDataListFilter.class.getName(), new UpgradedMultivalueDataListFilter(), null));
     }
 
     public void stop(BundleContext context) {
