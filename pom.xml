@@ -126,16 +126,16 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
-                <excludes>
-                    <exclude>**/*.ftl</exclude>
-                </excludes>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
             </resource>
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>false</filtering>
-                <includes>
-                    <include>**/*.ftl</include>
-                </includes>
+                <excludes>
+                    <exclude>**/*.properties</exclude>
+                </excludes>
             </resource>
         </resources>
     </build>
