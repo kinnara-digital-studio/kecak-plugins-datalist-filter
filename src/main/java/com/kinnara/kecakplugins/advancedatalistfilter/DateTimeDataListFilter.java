@@ -68,12 +68,15 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
         @Nonnull
         final String databaseDateFunction;
+        boolean emptyFilter = false;
         if(valueFrom == null || valueFrom.isEmpty()) {
             valueFrom = "1970-01-01 00:00:00";
             databaseDateFunction = "";
+            emptyFilter = true;
         } else {
             valueFrom = showTime ? valueFrom : valueFrom + " 00:00:00";
             databaseDateFunction = getPropertyString("databaseDateFunction");
+            emptyFilter = false;
         }
 
         @Nonnull
@@ -84,10 +87,12 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         } else {
             valueTo = showTime ? valueTo : valueTo + " 23:59:59";
             filterDateFunction = getPropertyString("filterDateFunction");
+            emptyFilter = false;
         }
 
         if (datalist != null && datalist.getBinder() != null) {
             StringBuilder sb = new StringBuilder();
+            sb.append("((");
             if(databaseDateFunction.isEmpty()) {
                 sb.append(String.format("CAST(%s AS date)", datalist.getBinder().getColumnName(name)));
             } else {
@@ -97,11 +102,14 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
             sb.append(" BETWEEN ");
 
             if(filterDateFunction.isEmpty()) {
-                sb.append("CAST(? AS date) AND CAST(? AS date)");
+                sb.append("CAST(? AS date) AND CAST(? AS date))");
             } else {
-                sb.append(String.format("%s AND %s", filterDateFunction, filterDateFunction));
+                sb.append(String.format("%s AND %s)", filterDateFunction, filterDateFunction));
             }
-
+            if(emptyFilter){
+                sb.append(" OR (" + String.format("CAST(%s AS date)", datalist.getBinder().getColumnName(name)) + " IS NULL)");
+            }
+            sb.append(")");
             queryObject.setQuery(sb.toString());
             queryObject.setValues(new String[]{valueFrom, valueTo});
 
