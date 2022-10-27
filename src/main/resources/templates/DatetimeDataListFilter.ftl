@@ -16,7 +16,8 @@
                 autoclose     : true,
                 todayBtn      : true,
                 pickerPosition: "bottom-left",
-                minView       : '${minView}'
+                minView       : '${minView}',
+                clearBtn      : true
             });
 
             $("#${name}_to").datetimepicker({
@@ -24,7 +25,8 @@
                 autoclose     : true,
                 todayBtn      : true,
                 pickerPosition: "bottom-left",
-                minView       : '${minView}'
+                minView       : '${minView}',
+                clearBtn      : true
             });
 
             $("#${name}_from").datetimepicker().on("changeDate", function(e){
