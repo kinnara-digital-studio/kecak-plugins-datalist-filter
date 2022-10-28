@@ -105,7 +105,7 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/OperatorDataListFilter");
         String buildNumber = resourceBundle.getString("buildNumber");
-        return getClass().getPackage().getImplementationVersion() + " " + buildNumber;
+        return buildNumber;
     }
 
     @Override
