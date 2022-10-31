@@ -9,7 +9,7 @@
         display: none;
     }
 </style>
-<select id="${operatorName!}" name="${operatorName!}" class="selectOperator" style="width: 100px;">
+<select id="${operatorName!}" name="${operatorName!}" class="selectOperator" style="width: 50px; display:none">
     <option value="eq" >&#61;</option>
     <option value="lte" >&lt;&#61;</option>
     <option value="lt" >&lt;</option>
@@ -22,56 +22,16 @@
         <option value="${option.value!?html}" selected>${option.label!?html}</option>
     </#list>
 </select>
+<input type="hidden" name="${columnsName!} value="${columns!}">
 
 <script type="text/javascript">
     $(document).ready(function(){
-        <#--
-        $('#${name!}.multiSelectDataListFilter').selectize({
-            valueField: 'id',
-            labelField: 'text',
-            searchField: 'text',
-            options: [],
-            plugins: {'infinite_scroll': {'scrollRatio': 0.85, 'scrollStep': 20}},
-            render: {
-                item : function(item, escape) {
-                    return '<div><span class="name">' + escape(item.id) + '</span></div>';
-                },
-                option: function(item, escape) {
-                    return '<div style="padding: 5px 8px;"><span>'+escape(item.text)+'</div>';
-                }
-            },
-            load: function(query, callback) {
-                if (!query.length) {
-                    return callback();
-                }
-
-                $.ajax({
-                        url: '${request.contextPath}/web/json/plugin/${className}/service',
-                        delay : 1000,
-                        dataType: 'json',
-                        data : {
-                        search: query,
-                        appId : '${appId!}',
-                        appVersion : '${appVersion!}',
-                        dataListId : '${dataListId!}',
-                        columns : '${columns!}',
-                        page : 1
-                    },
-                    error: () => callback(),
-                    success: (res) => {
-                        callback(res.results);
-                    }
-                });
-            },
-            onChange: function(value) {
-                if(!value) {
-                    $('select#${name!}').append($('<option data-dummy-empty selected>', {}));
-                } else {
-                    $('select#${name!} option[data-dummy-empty=""]').remove();
-                }
-            }
+        $('#${operatorName!}').select2()
+        .on('select2:select', function(e){
+            let data = e.params.data;
+            $('#${operatorName!}').val(data.id).trigger('change');
         });
-        -->
+
 
         $('#${name!}.multiSelectDataListFilter').select2({
             placeholder: '${placeholder!}',
@@ -91,6 +51,7 @@
                     return {
                         search: params.term,
                         appId : '${appId!}',
+                        operator : $('#${operatorName!}').val(),
                         appVersion : '${appVersion!}',
                         dataListId : '${dataListId!}',
                         columns : '${columns!}',

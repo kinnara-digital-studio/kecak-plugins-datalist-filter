@@ -39,28 +39,42 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
         AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
 
         Map dataModel = new HashMap();
-        dataModel.put("name", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
-        dataModel.put("operatorName", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "operator" + name));
+        dataModel.put("name", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "opMulti_" + name));
+        dataModel.put("operatorName", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "operator_" + name));
+        dataModel.put("columnsName", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "columns_" + name));
         dataModel.put("label", label);
+
         Object [] grid = (Object []) getProperty("columns");
-        List<Map<String, String>> optionsValues = new ArrayList<>();
         String columns = "";
         for (Object gridLine : grid ){
             Map<String, String> line = (Map<String, String>) gridLine;
-            LogUtil.info(getClassName(), line.get("column") + "-" + line.get("type"));
-
-            Map<String, String> m = new HashMap<>();
-            m.put("value",line.get("column") + "|" + line.get("type"));
-            m.put("label", line.get("column"));
             if(columns == ""){
-                columns = line.get("column");
+                columns = line.get("column") + ":" + line.get("type");
             }else{
-                columns = String.join(";", columns, line.get("column"));
+                columns = String.join(";", columns, line.get("column") + ":" + line.get("type"));
             }
-            optionsValues.add(m);
         }
+        dataModel.put("columns", columns);
 
-        LogUtil.info(getClassName(), "column from upgraded : " + columns);
+        String[] values = getValues(dataList, "opMulti_" + name);
+        List<Map<String, String>> optionsValues = (values == null ? Stream.<String>empty() : Arrays.stream(values))
+                .map(s -> {
+                    Map<String, String> m = new HashMap<>();
+                    m.put("value", s); //column_name:type:value:operator
+
+                    String[] split = s.split(":", 4); //column_name:type:value:operator
+
+                    m.put("label", split.length < 2
+                            ? s
+                            : Arrays.stream(dataList.getColumns())
+                            .filter(c -> split[0].equals(c.getName()))
+                            .findAny()
+                            .map(DataListColumn::getLabel)
+                            .orElse(split[0]) + split[3] + split[2]); //column_name operator value
+                    return m;
+                })
+                .collect(Collectors.toList());
+        dataModel.put("optionsValues", optionsValues);
         dataModel.put("className", getClassName());
         dataModel.put("appId", appDefinition.getAppId());
         dataModel.put("appVersion", appDefinition.getVersion());
@@ -86,13 +100,73 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
         dataModel.put("messageErrorLoading", getPropertyString("messageErrorLoading"));
         dataModel.put("messageNoResults", getPropertyString("messageNoResults"));
         dataModel.put("messageSearching", getPropertyString("messageSearching"));
-        dataModel.put("columns", columns);
+
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/UpgradedMultiValueDataListFilter.ftl", null);
     }
 
     @Override
-    public DataListFilterQueryObject getQueryObject(DataList dataList, String s) {
-        return null;
+    public DataListFilterQueryObject getQueryObject(DataList dataList, String name) {
+            String[] values = Optional.ofNullable(getValues(dataList, "opMulti_" + name)).orElse(null);
+            String columns = getValue(dataList, "columns_" + name);
+            final StringBuilder query = new StringBuilder("1 <> 1");
+            final List<String> args = new ArrayList<>();
+            String[] params = Optional.ofNullable(values)
+                    .map(Arrays::stream)
+                    .orElseGet(Stream::empty)
+                    .map(s -> s.split(";"))
+                    .flatMap(Arrays::stream)
+                    .toArray(String[]::new);
+
+            if (params.length == 0) {
+                return null;
+            }
+
+            Arrays.stream(params)
+                    .map(s -> {
+                        LogUtil.info(getClassName(), "values : " + s);
+                        String[] split = s.split(":"); //column_name:type:value:operator
+
+                        final DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
+                        queryObject.setOperator("OR");
+                        if (split.length == 0)
+                            return null;
+                        else if (split.length == 1 || split[0].isEmpty() || split[1].isEmpty() || dataList == null || dataList.getBinder() == null) {
+                            StringBuilder freeQuery = new StringBuilder("( 1 <> 1");
+                            List<String> freeArgs = new ArrayList<>();
+
+                            Arrays.stream(columns.split(";"))
+                                    .map(c -> dataList.getBinder().getColumnName(c))
+                                    .forEach(c -> {
+                                        freeQuery.append(" OR ").append("lower(").append(c).append(") like lower(?)");
+                                        freeArgs.add("%" + split[0] + "%");
+                                    });
+                            freeQuery.append(")");
+
+                            queryObject.setQuery(freeQuery.toString());
+                            queryObject.setValues(freeArgs.toArray(new String[0]));
+                        } else {
+                            queryObject.setQuery("CAST(" + dataList.getBinder().getColumnName(split[0]) + " AS " + (split[1].equals("text") ? "string" : "big_decimal") + ") "+split[3]+
+                                    " CAST(? AS " + (split[1].equals("text") ? "string" : "big_decimal") + ")");
+                            queryObject.setValues(new String[]{split[2]});
+                        }
+                        return queryObject;
+                    })
+                    .filter(Objects::nonNull)
+                    .forEach(dataListFilterQueryObject -> {
+                        query.append(" ")
+                                .append(dataListFilterQueryObject.getOperator())
+                                .append(" ")
+                                .append(dataListFilterQueryObject.getQuery());
+
+                        Collections.addAll(args, dataListFilterQueryObject.getValues());
+                    });
+
+            DataListFilterQueryObject result = new DataListFilterQueryObject();
+            LogUtil.info(getClassName(), "Query : " + query);
+            result.setQuery("(" + query + ")");
+            result.setValues(args.toArray(new String[0]));
+            result.setOperator("AND");
+        return result;
     }
 
     @Override
@@ -157,7 +231,19 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
             final Collection<String> columns = getParameterValues(request, "columns");
             final String search = optParameter(request, "search").orElse("");
             final long page = optParameter(request, "page").map(Long::parseLong).orElse(1L);
+            final String operatorKey = getParameter(request, "operator");
+            Map<String, String> opMap = new HashMap<String, String>() {{
+                put("eq", "=");
+                put("lt", "<");
+                put("lte", "<=");
+                put("gt", ">");
+                put("gte", ">=");
+                put("neq", "<>");
+            }};
 
+            Map<String, String> columnMap = columns.stream().map(e -> e.split(":")).collect(Collectors.toMap(e -> e[0],e -> e[1]));
+
+            final String operator = opMap.get(operatorKey);
             final long appVersion = optParameter(request, "appVersion")
                     .map(Long::parseLong)
                     .orElseGet(() -> appDefinitionDao.getPublishedVersion(appId));
@@ -185,7 +271,12 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
                     .filter(s -> !s.isEmpty())
 
                     // filter by respected column
-                    .map(c -> Arrays.binarySearch(dataListColumns, new DataListColumn(c, "", false), Comparator.comparing(DataListColumn::getName)))
+                    .map(c -> {
+                        String[] splitColumn = c.split(":");
+                        String col = splitColumn[0];
+                        return Arrays.binarySearch(dataListColumns, new DataListColumn(col, "", false), Comparator.comparing(DataListColumn::getName));
+                    })
+
                     .filter(i -> i >= 0)
                     .map(i -> dataListColumns[i])
 
@@ -206,8 +297,10 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
                             // build result for each
                             .map(e -> {
                                 Map<String, String> m = new HashMap<>();
-                                m.put("id", c.getName() + ":" + e.getKey());
-                                m.put("text", c.getLabel() + ":" + e.getValue());
+                                String type = columnMap.get(e.getKey());
+                                m.put("id", c.getName() + ":" + type + ":" + e.getKey() + ":" + operator);
+                                LogUtil.info(getClassName(), "name : " + c.getName());
+                                m.put("text", c.getLabel() + " " + operator + " " + e.getValue());
                                 return m;
                             }));
 
@@ -217,13 +310,18 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
                     .map(Collection::stream)
                     .orElseGet(Stream::empty)
                     .flatMap(m -> m.entrySet().stream())
-                    .filter(e -> columns.stream().anyMatch(c -> c.equals(e.getKey())))
+                    .filter(e -> columns.stream().anyMatch(c -> {
+                                        String[] splitColumn = c.split(":");
+                                        String col = splitColumn[0];
+                                        return col.equals(e.getKey());
+                    }))
                     .filter(e -> searchPattern.matcher(String.valueOf(e.getValue())).find())
                     .map(e -> {
                         Map<String, String> m = new HashMap<>();
 
                         // ID contains FIELD_NAME:FIELD_VALUE
-                        m.put("id", e.getKey() + ":" + e.getValue());
+                        String type = columnMap.get(e.getKey());
+                        m.put("id", e.getKey() + ":" + type + ":" + e.getValue() + ":" + operator);
 
                         // TEXT contains FIELD_LABEL:FIELD_VALUE
                         m.put("text", Stream.of(Arrays.binarySearch(dataListColumns, new DataListColumn(e.getKey(), "", false), Comparator.comparing(DataListColumn::getName)))
@@ -231,7 +329,7 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
                                 .map(i -> dataListColumns[i])
                                 .findAny()
                                 .map(DataListColumn::getLabel)
-                                .orElse(String.valueOf(e.getKey())) + ":" + e.getValue());
+                                .orElse(String.valueOf(e.getKey())) + operator + e.getValue());
 
                         return m;
                     });

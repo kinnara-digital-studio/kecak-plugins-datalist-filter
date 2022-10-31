@@ -9,7 +9,6 @@
         display: none;
     }
 </style>
-
 <select id="${name!}" name="${name!}" class="multiSelectDataListFilter" multiple placeholder="${placeholder}" style="width: 400px; display: none;">
     <#list optionsValues! as option>
         <option value="${option.value!?html}" selected>${option.label!?html}</option>

@@ -44,14 +44,12 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
     public String getTemplate(DataList dataList, String name, String label) {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
         AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
-        String columnList = getPropertyString("columns");
-        LogUtil.info(getClassName(), "column in multi : " + columnList);
 
         Map dataModel = new HashMap();
-        dataModel.put("name", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
+        dataModel.put("name", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "multi_" + name));
         dataModel.put("label", label);
 
-        String[] values = getValues(dataList, name);
+        String[] values = getValues(dataList, "multi_" +name);
         List<Map<String, String>> optionsValues = (values == null ? Stream.<String>empty() : Arrays.stream(values))
                 .map(s -> {
                     Map<String, String> m = new HashMap<>();
@@ -102,7 +100,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
     @Override
     public DataListFilterQueryObject getQueryObject(DataList dataList, String name) {
-        String[] values = getValues(dataList, name, getPropertyString("defaultValue"));
+        String[] values = getValues(dataList, "multi_" + name, getPropertyString("defaultValue"));
 
         final StringBuilder query = new StringBuilder("1 <> 1");
         final List<String> args = new ArrayList<>();
@@ -249,7 +247,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                     .filter(s -> !s.isEmpty())
 
                     // filter by respected column
-                    .map(c -> Arrays.binarySearch(dataListColumns, new DataListColumn(c, "", false), Comparator.comparing(DataListColumn::getName)))
+                    .map(c ->  Arrays.binarySearch(dataListColumns, new DataListColumn(c, "", false), Comparator.comparing(DataListColumn::getName)))
                     .filter(i -> i >= 0)
                     .map(i -> dataListColumns[i])
 
