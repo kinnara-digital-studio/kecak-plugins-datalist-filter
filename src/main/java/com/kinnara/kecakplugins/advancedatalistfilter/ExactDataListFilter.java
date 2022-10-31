@@ -1,8 +1,12 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
+import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.lib.TextFieldDataListFilterType;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
+import org.joget.plugin.base.PluginManager;
+
+import java.util.ResourceBundle;
 
 public class ExactDataListFilter extends TextFieldDataListFilterType {
 
@@ -25,7 +29,10 @@ public class ExactDataListFilter extends TextFieldDataListFilterType {
 
     @Override
     public String getVersion() {
-        return getClass().getPackage().getImplementationVersion();
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/BuildNumber");
+        String buildNumber = resourceBundle.getString("buildNumber");
+        return buildNumber;
     }
 
     @Override

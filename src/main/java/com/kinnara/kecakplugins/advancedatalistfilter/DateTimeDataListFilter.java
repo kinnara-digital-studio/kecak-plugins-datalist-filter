@@ -146,8 +146,8 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
     @Override
     public String getVersion() {
         PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
-        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/OperatorDataListFilter");
+        ResourceBundle resourceBundle = pluginManager.getPluginMessageBundle(getClassName(), "/messages/BuildNumber");
         String buildNumber = resourceBundle.getString("buildNumber");
-        return getClass().getPackage().getImplementationVersion() + " " + buildNumber;
+        return buildNumber;
     }
 }
