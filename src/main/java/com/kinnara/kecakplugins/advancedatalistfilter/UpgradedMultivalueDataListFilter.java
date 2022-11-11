@@ -1,6 +1,6 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
-import com.kinnara.kecakplugins.advancedatalistfilter.exceptions.RestApiException;
+import com.kinnara.kecakplugins.advancedatalistfilter.exceptions.ApiException;
 import org.joget.apps.app.dao.AppDefinitionDao;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
@@ -220,7 +220,7 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
     public void webService(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             if (!"GET".equals(request.getMethod())) {
-                throw new RestApiException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Only support [GET] method");
+                throw new ApiException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Only support [GET] method");
             }
 
             // method for paging
@@ -250,17 +250,17 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
 
             final AppDefinition appDefinition = appId.isEmpty() ? AppUtil.getCurrentAppDefinition() : appDefinitionDao.loadVersion(appId, appVersion);
             if (appDefinition == null) {
-                throw new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
+                throw new ApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
             }
 
             AppUtil.setCurrentAppDefinition(appDefinition);
 
             final DataList dataList = Optional.ofNullable(generateDataList(appDefinition, dataListId))
-                    .orElseThrow(() -> new RestApiException(HttpServletResponse.SC_NOT_FOUND, "DataList [" + dataListId + "] not found"));
+                    .orElseThrow(() -> new ApiException(HttpServletResponse.SC_NOT_FOUND, "DataList [" + dataListId + "] not found"));
 
             final DataListColumn[] dataListColumns = Optional.of(dataList)
                     .map(DataList::getColumns)
-                    .orElseThrow(() -> new RestApiException(HttpServletResponse.SC_FORBIDDEN, "DataList [" + dataListId + "] don't have columns"));
+                    .orElseThrow(() -> new ApiException(HttpServletResponse.SC_FORBIDDEN, "DataList [" + dataListId + "] don't have columns"));
 
             Arrays.sort(dataListColumns, Comparator.comparing(DataListColumn::getName));
 
@@ -350,7 +350,7 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
 
             response.setContentType("application/json");
             response.getWriter().write(jsonData.toString());
-        } catch (RestApiException e) {
+        } catch (ApiException e) {
             LogUtil.error(getClassName(), e, e.getMessage());
             response.sendError(e.getErrorCode(), e.getMessage());
         } catch (JSONException e) {
@@ -425,11 +425,11 @@ public class UpgradedMultivalueDataListFilter extends DataListFilterTypeDefault 
      * @param request
      * @param parameterName
      * @return
-     * @throws RestApiException
+     * @throws ApiException
      */
-    public String getParameter(HttpServletRequest request, String parameterName) throws RestApiException {
+    public String getParameter(HttpServletRequest request, String parameterName) throws ApiException {
         return optParameter(request, parameterName)
-                .orElseThrow(() -> new RestApiException(HttpServletResponse.SC_BAD_REQUEST, "Parameter [" + parameterName + "] is required"));
+                .orElseThrow(() -> new ApiException(HttpServletResponse.SC_BAD_REQUEST, "Parameter [" + parameterName + "] is required"));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.kinnara.kecakplugins.advancedatalistfilter;
 
+import com.kinnara.kecakplugins.advancedatalistfilter.exceptions.ApiException;
 import com.kinnarastudio.commons.Try;
 import com.kinnarastudio.commons.jsonstream.JSONCollectors;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
@@ -18,7 +19,6 @@ import org.joget.plugin.base.PluginWebSupport;
 import org.joget.workflow.util.WorkflowUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.kecak.apps.exception.ApiException;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nonnull;
@@ -261,10 +261,7 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
     }
 
     protected boolean isAuthorize(@Nonnull DataList dataList) {
-        final ApplicationContext applicationContext = AppUtil.getApplicationContext();
-        final DataListService dataListService = (DataListService) applicationContext.getBean("dataListService");
-        final boolean isPermissionSet = dataList.getPermission() != null;
-        return !isPermissionSet && isDefaultUserToHavePermission() || isPermissionSet && dataListService.isAuthorize(dataList);
+        return isDefaultUserToHavePermission();
     }
 
     protected boolean isDefaultUserToHavePermission() {
