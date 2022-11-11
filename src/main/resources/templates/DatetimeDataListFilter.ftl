@@ -1,17 +1,24 @@
 <style>
-.dropdown-menu{
-position : absolut;
-min-width : 160px;
-margin : 2px 0 0;
-list-style : none;
-font-size : 14px;
-text-align : left;
-background-color : ffff;
-border : 1px solid rgba(0,0,0,.15);
-box-shadow : 0 6px 12px rgba(0,0,0,.175);
-background-clip;
-float : left
-}
+    .dropdown-menu {
+         position:absolute;
+         top:100%;
+         left:0;
+         z-index:1000;
+         display:none;
+         min-width:160px;
+         padding:5px 0;
+         margin:2px 0 0;
+         list-style:none;
+         font-size:14px;
+         text-align:left;
+         background-color:#fff;
+         border:1px solid #ccc;
+         border:1px solid rgba(0,0,0,.15);
+         border-radius:4px;
+         -webkit-box-shadow:0 6px 12px rgba(0,0,0,.175);
+         box-shadow:0 6px 12px rgba(0,0,0,.175);
+         background-clip:padding-box;
+    }
 </style>
 
 <div>
