@@ -1,3 +1,19 @@
+<style>
+.dropdown-menu{
+position : absolut;
+min-width : 160px;
+margin : 2px 0 0;
+list-style : none;
+font-size : 14px;
+text-align : left;
+background-color : ffff;
+border : 1px solid rgba(0,0,0,.15);
+box-shadow : 0 6px 12px rgba(0,0,0,.175);
+background-clip;
+float : left
+}
+</style>
+
 <div>
     <link rel="stylesheet" href="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/css/bootstrap-datetimepicker.css">
     <script src="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
