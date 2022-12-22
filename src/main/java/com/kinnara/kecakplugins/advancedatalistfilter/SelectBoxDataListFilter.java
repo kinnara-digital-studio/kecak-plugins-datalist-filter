@@ -14,6 +14,7 @@ import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.apps.datalist.service.DataListService;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
+import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.base.PluginWebSupport;
 import org.joget.workflow.util.WorkflowUtil;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class SelectBoxDataListFilter extends DataListFilterTypeDefault implements PluginWebSupport, CommonUtils {
@@ -61,19 +63,27 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
         if (datalist != null && datalist.getBinder() != null) {
-            Set<String> paramSet = getValueSet(datalist, name, getPropertyString("defaultValue"));
+            List<String> paramList = new ArrayList<>(getValueSet(datalist, name, getPropertyString("defaultValue")));
 
-            String query = paramSet.stream()
-                    .map(s -> "?")
-                    .collect(Collectors.joining(",",  datalist.getBinder().getColumnName(name) + " in (", ")"));
-            String[] params = paramSet.toArray(new String[0]);
+            final String columnName = datalist.getBinder().getColumnName(name);
+            String query = paramList.stream()
+                    .map(s -> "(" + columnName + " = ? OR " + columnName + " LIKE ? || ';%' OR " + columnName + " LIKE '%;' || ? OR " + columnName + " LIKE '%;' || ? || ';%')")
+                    .collect(Collectors.joining(" AND "));
 
-            queryObject.setQuery("(" + (paramSet.isEmpty() ? "1 = 1" : query) + ")");
+            String[] params = paramList.stream()
+                    .flatMap(s -> repeat(s, 4))
+                    .toArray(String[]::new);
+
+            queryObject.setQuery("(" + (paramList.isEmpty() ? "1 = 1" : query) + ")");
             queryObject.setValues(params);
 
             return queryObject;
         }
         return null;
+    }
+
+    protected <T> Stream<T> repeat(T value, int n) {
+        return IntStream.rangeClosed(1, n).limit(n).boxed().map(i -> value);
     }
 
     /**
