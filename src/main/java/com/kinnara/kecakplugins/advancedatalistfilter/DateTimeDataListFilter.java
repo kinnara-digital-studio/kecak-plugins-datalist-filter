@@ -140,7 +140,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
     @Override
     public String getName() {
-        return getClassName();
+        return getLabel();
     }
 
     @Override

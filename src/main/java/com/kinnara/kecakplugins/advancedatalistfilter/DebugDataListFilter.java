@@ -47,7 +47,7 @@ public class DebugDataListFilter extends TextFieldDataListFilterType {
 
     @Override
     public String getName() {
-        return getClass().getName();
+        return getLabel();
     }
 
     @Override

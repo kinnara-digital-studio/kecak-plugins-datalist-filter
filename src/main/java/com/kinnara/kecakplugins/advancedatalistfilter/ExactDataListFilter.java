@@ -24,7 +24,7 @@ public class ExactDataListFilter extends TextFieldDataListFilterType {
 
     @Override
     public String getName() {
-        return getLabel() + getVersion();
+        return getLabel();
     }
 
     @Override
