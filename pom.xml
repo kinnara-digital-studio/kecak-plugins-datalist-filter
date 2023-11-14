@@ -4,7 +4,7 @@
     <groupId>com.kinnara.kecakplugins.datalistfilter</groupId>
     <artifactId>kecak-plugins-datalist-filters</artifactId>
     <packaging>bundle</packaging>
-    <version>1.0.0</version>
+    <version>3.0.0</version>
     <name>kecak-plugins-datalist-filters</name>
     <scm>
         <connection>scm:git:ssh://git@gitlab.com:kinnarastudio/kecak-plugins-advance-datalist-filter.git</connection>
@@ -156,8 +156,14 @@
         <dependency>
             <groupId>org.joget</groupId>
             <artifactId>wflow-core</artifactId>
-            <version>5.0-SNAPSHOT</version>
+            <version>7.0-SNAPSHOT</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>javax.servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
       <!-- Change plugin specific dependencies here -->
         <dependency>
@@ -173,7 +179,7 @@
         <dependency>
             <groupId>com.kinnarastudio</groupId>
             <artifactId>kinnara-commons</artifactId>
-            <version>1.2.5</version>
+            <version>4.1.1</version>
         </dependency>
         <!-- End change plugin specific dependencies here -->
     </dependencies>

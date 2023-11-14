@@ -82,7 +82,7 @@ public class NegationDataListFilter extends DataListFilterTypeDefault implements
             filter = (DataListFilterType) Optional.of("filter")
                     .map(this::getProperty)
                     .map(o -> (Map<String, Object>) o)
-                    .map(pluginManager::getPluginObject)
+                    .map(pluginManager::getPlugin)
                     .orElse(null);
         }
 

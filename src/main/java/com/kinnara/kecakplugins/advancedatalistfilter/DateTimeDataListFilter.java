@@ -5,8 +5,10 @@ import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.plugin.base.PluginManager;
+import org.joget.workflow.util.WorkflowUtil;
 
 import javax.annotation.Nonnull;
+import javax.servlet.http.HttpServletRequest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -29,12 +31,16 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         final String defaultValueFrom = Arrays.stream(defaultValue).findFirst().orElse("");
         final String defaultValueTo = Arrays.stream(defaultValue).skip(1).findFirst().orElse("");
 
-        dataModel.put("valueFrom", getValue(datalist, name + "_from", defaultValueFrom));
-        dataModel.put("valueTo", getValue(datalist, name + "_to", defaultValueTo));
+        dataModel.put("valueFrom", getValue(datalist, name + "-from", defaultValueFrom));
+        dataModel.put("valueTo", getValue(datalist, name + "-to", defaultValueTo));
         dataModel.put("optionsBinder", getProperty("optionsBinder"));
         dataModel.put("className", getClassName());
         dataModel.put("minView", showTime ? "hour" : "month");
         dataModel.put("singleValue", getPropertyString("singleValue"));
+
+        HttpServletRequest request = WorkflowUtil.getHttpServletRequest();
+        dataModel.put("request", request);
+        dataModel.put("properties", getProperties());
 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/DatetimeDataListFilter.ftl", null);
     }
@@ -50,8 +56,8 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         if(!defaultValue.isEmpty()) {
             // more likely it is called from plugin kecak-plugins-datalist-api
             String[] defaultValues = defaultValue.split(";");
-            valueFrom = getValue(datalist, name + "_from", defaultValues.length < 1 ? null : defaultValues[0]);
-            valueTo = singleValue ? valueFrom : getValue(datalist, name + "_to", defaultValues.length < 2 ? null : defaultValues[1]);
+            valueFrom = getValue(datalist, name + "-from", defaultValues.length < 1 ? null : defaultValues[0]);
+            valueTo = singleValue ? valueFrom : getValue(datalist, name + "-to", defaultValues.length < 2 ? null : defaultValues[1]);
         } else {
             final Optional<String> optValues = Optional.ofNullable(getValue(datalist, name));
             if(optValues.isPresent()) {
@@ -140,7 +146,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
     @Override
     public String getName() {
-        return getLabel();
+        return "Date Time";
     }
 
     @Override

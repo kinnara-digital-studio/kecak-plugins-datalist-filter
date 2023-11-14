@@ -1,59 +1,66 @@
-<style>
-    .dropdown-menu {
-         position:absolute;
-         top:100%;
-         left:0;
-         z-index:1000;
-         display:none;
-         min-width:160px;
-         padding:5px 0;
-         margin:2px 0 0;
-         list-style:none;
-         font-size:14px;
-         text-align:left;
-         background-color:#fff;
-         border:1px solid #ccc;
-         border:1px solid rgba(0,0,0,.15);
-         border-radius:4px;
-         -webkit-box-shadow:0 6px 12px rgba(0,0,0,.175);
-         box-shadow:0 6px 12px rgba(0,0,0,.175);
-         background-clip:padding-box;
-    }
-</style>
-
 <div>
-    <link rel="stylesheet" href="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/css/bootstrap-datetimepicker.css">
-    <script src="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
+    <#if locale! != ''>
+        <script type="text/javascript" src="${request.contextPath}/js/jquery/ui/i18n/jquery.ui.datepicker-${locale}.js"></script>
+    </#if>
+    <script type="text/javascript" src="${request.contextPath}/plugin/org.joget.apps.form.lib.DatePicker/js/jquery.placeholder.min.js"></script>
+    <link rel="stylesheet" href="${request.contextPath}/plugin/org.joget.apps.form.lib.DatePicker/css/datePicker.css" />
+    <link rel="stylesheet" href="${request.contextPath}/plugin/org.joget.apps.form.lib.DatePicker/css/jquery-ui-timepicker-addon.css" />
+    <script type="text/javascript" src="${request.contextPath}/plugin/org.joget.apps.form.lib.DatePicker/js/jquery-ui-timepicker-addon.js"></script>
+    <script type="text/javascript" src="${request.contextPath}/plugin/org.joget.apps.form.lib.DatePicker/js/jquery.custom.datepicker.js"></script>
 
-    <#-- <strong>${label}</strong><br/> -->
-    <input name="${name}_from"  id="${name}_from"  class="datetimepicker" type="text" value="${valueFrom!?html}" placeholder="From : ${label}" readonly>
+    <div style="float: left;padding-right: 10px;">
+        <input id="${name}-from" name="${name}-from" type="text" size="${properties.size!}" value="${value!?html}" class="${elementParamName!} datetimepicker" placeholder="From : ${label}" value="${valueFrom!}" readonly}"/>
+    </div>
 
-    <#if singleValue?? && (singleValue != "true") >
-        <input name="${name}_to"    id="${name}_to" class="datetimepicker" type="text" value="${valueTo!?html}"   placeholder="To : ${label}" readonly>
+    <#if (singleValue!'false') != 'true' >
+        <div style="float: left;padding-right: 10px;">
+            <input id="${name}-to" name="${name}-to" type="text" size="${properties.size!}" value="${value!?html}" class="${elementParamName!} datetimepicker" placeholder="To : ${label}" value="${valueTo!}" readonly/>
+        </div>
     </#if>
 
     <script type="text/javascript">
-        $(document).ready(function () {
-            $("#${name}_from").datetimepicker({
-                format        : "${dateFormat}",
-                autoclose     : true,
-                todayBtn      : true,
-                pickerPosition: "bottom-left",
-                minView       : '${minView}',
-                clearBtn      : true
-            });
+        $(document).ready(function() {
+            $("input[id^='${name}-'].datetimepicker").each(function(i, e) {
+                let config = {
+                     showOn: "focus",
+                     buttonImage: "${request.contextPath}/css/images/calendar.png",
+                     buttonImageOnly: true,
+                     changeMonth: true,
+                     changeYear: true,
+                     timeInput: true
 
-            $("#${name}_to").datetimepicker({
-                format        : "${dateFormat}",
-                autoclose     : true,
-                todayBtn      : true,
-                pickerPosition: "bottom-left",
-                minView       : '${minView}',
-                clearBtn      : true
-            });
+                     <#if properties.format24hr! == ''>
+                        ,timeFormat: "hh:mm tt"
+                     </#if>
 
-            $("#${name}_from").datetimepicker().on("changeDate", function(e){
-                $("#${name}_to").datetimepicker('setStartDate', e.date);
+                     ,dateFormat: "yy-mm-dd"
+
+                     <#if properties.yearRange! != ''>
+                        ,yearRange: "${properties.yearRange}"
+                     </#if>
+
+                     <#if properties.startDateFieldId! != ''>
+                        ,startDateFieldId: "${properties.startDateFieldId}"
+                     </#if>
+
+                     <#if properties.endDateFieldId! != ''>
+                        ,endDateFieldId: "${properties.endDateFieldId}"
+                     </#if>
+
+                     <#if properties.currentDateAs! != ''>
+                        ,currentDateAs: "${properties.currentDateAs}"
+                     </#if>
+
+                     <#if properties.datePickerType! != ''>
+                        ,datePickerType: "${properties.datePickerType}"
+                     </#if>
+
+                     <#if properties.firstday! != ''>
+                        ,firstDay: "${properties.firstday}"
+                     </#if>
+                };
+
+                $(e).cdatepicker(config);
             });
         });
     </script>
