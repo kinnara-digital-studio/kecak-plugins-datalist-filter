@@ -1,6 +1,8 @@
 package com.kinnara.kecakplugins.advancedatalistfilter.exceptions;
 
-public class ApiException extends Exception {
+import javax.servlet.ServletException;
+
+public class ApiException extends ServletException {
     private final int httpErrorCode;
 
     public ApiException(int errorCode, String message) {

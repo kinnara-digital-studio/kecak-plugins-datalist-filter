@@ -1,0 +1,16 @@
+[
+  {
+    "title": "@@datalist.sbdlfp.editSelectBox@@",
+    "properties": [
+      {
+        "name": "processId",
+        "label": "Process",
+        "type": "selectbox",
+        "options_ajax" : "[CONTEXT_PATH]/web/json/app[APP_PATH]/plugin/org.joget.apps.userview.lib.InboxMenu/service?action=getProcesses",
+        "required": "true"
+      }
+    ]
+  }
+]
+
+	    
