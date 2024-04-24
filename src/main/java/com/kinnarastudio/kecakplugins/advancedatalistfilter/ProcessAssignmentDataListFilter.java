@@ -56,7 +56,7 @@ public class ProcessAssignmentDataListFilter extends DataListFilterTypeDefault {
         dataModel.put("multivalue", "multiple");
         dataModel.put("size", size);
 
-        return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
+        return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/ProcessAssignmentDataListFilter.ftl", null);
     }
 
     @Override
