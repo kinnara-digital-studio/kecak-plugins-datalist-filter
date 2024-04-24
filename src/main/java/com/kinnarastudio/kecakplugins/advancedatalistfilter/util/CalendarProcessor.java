@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.advancedatalistfilter.util;
+package com.kinnarastudio.kecakplugins.advancedatalistfilter.util;
 
 import java.text.DateFormat;
 import java.util.Calendar;

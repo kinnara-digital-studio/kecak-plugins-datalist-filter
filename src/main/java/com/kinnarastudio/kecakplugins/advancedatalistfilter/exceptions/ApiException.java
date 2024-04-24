@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.advancedatalistfilter.exceptions;
+package com.kinnarastudio.kecakplugins.advancedatalistfilter.exceptions;
 
 import javax.servlet.ServletException;
 

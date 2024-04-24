@@ -1,6 +1,5 @@
-package com.kinnara.kecakplugins.advancedatalistfilter;
+package com.kinnarastudio.kecakplugins.advancedatalistfilter;
 
-import com.kinnara.kecakplugins.advancedatalistfilter.exceptions.ApiException;
 import org.joget.apps.app.dao.AppDefinitionDao;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
@@ -19,6 +18,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
+
+import com.kinnarastudio.kecakplugins.advancedatalistfilter.exceptions.ApiException;
 
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;

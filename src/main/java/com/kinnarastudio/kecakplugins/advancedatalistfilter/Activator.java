@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.advancedatalistfilter;
+package com.kinnarastudio.kecakplugins.advancedatalistfilter;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
