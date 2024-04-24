@@ -7,9 +7,9 @@
     <version>3.0.0</version>
     <name>kecak-plugins-datalist-filters</name>
     <scm>
-        <connection>scm:git:ssh://git@gitlab.com:kinnarastudio/kecak-plugins-advance-datalist-filter.git</connection>
-        <developerConnection>scm:git:ssh://git@gitlab.com:kinnarastudio/kecak-plugins-advance-datalist-filter.git</developerConnection>
-        <url>ssh://git@gitlab.com:kinnarastudio/kecak-plugins-advance-datalist-filter.git</url>
+        <connection>scm:git:ssh://git@github.com:kinnara-digital-studio/kecak-plugins-datalist-filter.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com:kinnara-digital-studio/kecak-plugins-datalist-filter.git</developerConnection>
+        <url>ssh://git@github.com:kinnara-digital-studio/kecak-plugins-datalist-filter.git</url>
         <tag>HEAD</tag>
     </scm>
     <url>http://www.kinnarastudio.com</url>
