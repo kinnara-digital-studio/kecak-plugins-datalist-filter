@@ -1,7 +1,7 @@
-<link rel="stylesheet" href="${request.contextPath}/plugin/${className}/bower_components/select2/dist/css/select2.min.css" />
-<link rel="stylesheet" href="${request.contextPath}/plugin/${className}/bower_components/selectize/dist/css/selectize.default.css" />
-<script type="text/javascript" src="${request.contextPath}/plugin/${className}/bower_components/select2/dist/js/select2.min.js"></script>
-<script type="text/javascript" src="${request.contextPath}/plugin/${className}/bower_components/selectize/dist/js/standalone/selectize.min.js"></script>
+<link rel="stylesheet" href="${request.contextPath}/plugin/${className}/node_modules/select2/dist/css/select2.min.css" />
+<link rel="stylesheet" href="${request.contextPath}/plugin/${className}/node_modules/selectize/dist/css/selectize.default.css" />
+<script type="text/javascript" src="${request.contextPath}/plugin/${className}/node_modules/select2/dist/js/select2.min.js"></script>
+<script type="text/javascript" src="${request.contextPath}/plugin/${className}/node_modules/selectize/dist/js/standalone/selectize.min.js"></script>
 <script type="text/javascript" src="${request.contextPath}/plugin/${className}/js/selectize-infinite-scroll.js"></script>
 
 <style>

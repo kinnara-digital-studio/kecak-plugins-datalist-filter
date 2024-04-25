@@ -55,6 +55,7 @@ public class ProcessAssignmentDataListFilter extends DataListFilterTypeDefault {
         dataModel.put("options", options);
         dataModel.put("multivalue", "multiple");
         dataModel.put("size", size);
+        dataModel.put("className", getClassName());
 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/ProcessAssignmentDataListFilter.ftl", null);
     }
