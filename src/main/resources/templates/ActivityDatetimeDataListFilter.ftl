@@ -1,6 +1,6 @@
 <div>
-    <link rel="stylesheet" href="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/css/bootstrap-datetimepicker.css">
-    <script src="${request.contextPath}/plugin/${className}/bower_components/smalot-bootstrap-datetimepicker/js/bootstrap-datetimepicker.js"></script>
+    <link rel="stylesheet" href="${request.contextPath}/plugin/${className}/node_modules/bootstrap-datetime-picker/css/bootstrap-datetimepicker.css">
+    <script src="${request.contextPath}/plugin/${className}/node_modules/bootstrap-datetime-picker/js/bootstrap-datetimepicker.js"></script>
 
     <#-- <strong>${label}</strong><br/> -->
     <input name="${name}_from"  id="${name}_from"  class="datetimepicker" type="text" value="${valueFrom!?html}" placeholder="From : ${label}" readonly>

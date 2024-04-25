@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bootstrap-datetime-picker": "^2.4.4",
     "select2": "^4.0.5",
     "selectize": "^0.12.6"
   }
