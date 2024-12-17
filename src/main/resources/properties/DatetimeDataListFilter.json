@@ -28,13 +28,6 @@
                 ]
             },
             {
-                "name": "format",
-                "label": "Format",
-                "type": "textfield",
-                "value": "mm/dd/yy",
-                "required": "true"
-            },
-            {
                 "name" : "databaseDateFunction",
                 "label" : "@@datalist.dtdlfp.databaseDateFunction@@",
                 "description" : "@@datalist.dtdlfp.databaseDateFunction.desc@@",

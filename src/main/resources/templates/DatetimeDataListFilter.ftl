@@ -9,12 +9,12 @@
     <script type="text/javascript" src="${request.contextPath}/plugin/org.joget.apps.form.lib.DatePicker/js/jquery.custom.datepicker.js"></script>
 
     <div style="float: left;padding-right: 10px;">
-        <input id="${name}-from" name="${name}-from" type="text" size="${properties.size!}" value="${value!?html}" class="${elementParamName!} datetimepicker" placeholder="From : ${label}" value="${valueFrom!}" readonly}"/>
+        <input id="${name}-from" name="${name}-from" type="text" size="${properties.size!}" value="${value!?html}" class="${elementParamName!} datetimepicker" placeholder="From : ${label}" value="${valueFrom!?html}" readonly/>
     </div>
 
     <#if (singleValue!'false') != 'true' >
         <div style="float: left;padding-right: 10px;">
-            <input id="${name}-to" name="${name}-to" type="text" size="${properties.size!}" value="${value!?html}" class="${elementParamName!} datetimepicker" placeholder="To : ${label}" value="${valueTo!}" readonly/>
+            <input id="${name}-to" name="${name}-to" type="text" size="${properties.size!}" value="${value!?html}" class="${elementParamName!} datetimepicker" placeholder="To : ${label}" value="${valueTo!?html}" readonly/>
         </div>
     </#if>
 

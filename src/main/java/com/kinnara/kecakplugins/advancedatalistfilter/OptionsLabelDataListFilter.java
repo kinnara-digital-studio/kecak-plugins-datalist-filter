@@ -124,7 +124,7 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 	}
 
 	@Nonnull
-	private FormRowSet getOptions() {
+	protected FormRowSet getOptions() {
 		FormRowSet newRowSet = new FormRowSet();
 		for (FormRow formRow : newRowSet) {
 			FormRow newFormRow = new FormRow();
@@ -136,15 +136,11 @@ public class OptionsLabelDataListFilter extends DataListFilterTypeDefault implem
 		return newRowSet;
 	}
 
-	private String getDefaultValue() {
-		return getPropertyString("defaultValue");
-	}
-
-	private boolean getPropertyFieldsValue() {
+	protected boolean getPropertyFieldsValue() {
 		return getPropertyString("fields").contains("value");
 	}
 
-	private boolean getPropertyFieldsLabel() {
+	protected boolean getPropertyFieldsLabel() {
 		return getPropertyString("fields").contains("label");
 	}
 }

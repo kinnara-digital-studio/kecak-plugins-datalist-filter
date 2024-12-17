@@ -4,6 +4,7 @@ import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
+import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.util.WorkflowUtil;
 
@@ -31,8 +32,13 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         final String defaultValueFrom = Arrays.stream(defaultValue).findFirst().orElse("");
         final String defaultValueTo = Arrays.stream(defaultValue).skip(1).findFirst().orElse("");
 
-        dataModel.put("valueFrom", getValue(datalist, name + "-from", defaultValueFrom));
-        dataModel.put("valueTo", getValue(datalist, name + "-to", defaultValueTo));
+        final String valueFrom = getValue(datalist, name + "-from", defaultValueFrom);
+        LogUtil.info(getClassName(), "getTemplate : valueFrom [" + valueFrom + "]");
+        dataModel.put("valueFrom", valueFrom);
+
+        final String valueTo = getValue(datalist, name + "-to", defaultValueTo);
+        LogUtil.info(getClassName(), "getTemplate : valueTo [" + valueTo + "]");
+        dataModel.put("valueTo", valueTo);
         dataModel.put("optionsBinder", getProperty("optionsBinder"));
         dataModel.put("className", getClassName());
         dataModel.put("minView", showTime ? "hour" : "month");
@@ -51,31 +57,35 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
         final boolean singleValue = "true".equalsIgnoreCase(getPropertyString("singleValue"));
 
+        LogUtil.info(getClassName(), "getDataListParamString : name [" + name + "]");
+        LogUtil.info(getClassName(), "getDataListParamString : [" + datalist.getDataListParamString("fn_" + name) + "]");
+        LogUtil.info(getClassName(), "getDataListParamString : -from [" + getValue(datalist, name + "-from") + "]");
+        LogUtil.info(getClassName(), "getDataListParamString : -to [" + getValue(datalist, name + "-to") + "]");
         String valueFrom, valueTo;
-        final String defaultValue = AppUtil.processHashVariable(getPropertyString("defaultValue"), null, null, null);
-        if(!defaultValue.isEmpty()) {
-            // more likely it is called from plugin kecak-plugins-datalist-api
+        final String defaultValue = AppUtil.processHashVariable(getDefaultValue(), null, null, null);
+        if (!defaultValue.isEmpty()) {
             String[] defaultValues = defaultValue.split(";");
             valueFrom = getValue(datalist, name + "-from", defaultValues.length < 1 ? null : defaultValues[0]);
             valueTo = singleValue ? valueFrom : getValue(datalist, name + "-to", defaultValues.length < 2 ? null : defaultValues[1]);
         } else {
             final Optional<String> optValues = Optional.ofNullable(getValue(datalist, name));
-            if(optValues.isPresent()) {
+            if (optValues.isPresent()) {
                 String[] split = optValues.get().split(";");
                 valueFrom = Arrays.stream(split).findFirst().orElse("");
                 valueTo = Arrays.stream(split).skip(1).findFirst().orElse("");
             } else {
-                valueFrom = Optional.ofNullable(getValue(datalist, name + "_from")).orElse("");
-                valueTo = singleValue ? valueFrom : Optional.ofNullable(getValue(datalist, name + "_to")).orElse("");
+                valueFrom = Optional.ofNullable(getValue(datalist, name + "-from")).orElse("");
+                valueTo = singleValue ? valueFrom : Optional.ofNullable(getValue(datalist, name + "-to")).orElse("");
             }
         }
 
+        LogUtil.info(getClassName(), "valueFrom [" + valueFrom + "] valueTo [" + valueTo + "]");
+
         final boolean showTime = "true".equals(getPropertyString("showTime"));
 
-        @Nonnull
-        final String databaseDateFunction;
-        boolean emptyFilter = false;
-        if(valueFrom == null || valueFrom.isEmpty()) {
+        @Nonnull final String databaseDateFunction;
+        boolean emptyFilter;
+        if (valueFrom == null || valueFrom.isEmpty()) {
             valueFrom = "1970-01-01 00:00:00";
             databaseDateFunction = "";
             emptyFilter = true;
@@ -85,8 +95,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
             emptyFilter = false;
         }
 
-        @Nonnull
-        final String filterDateFunction;
+        @Nonnull final String filterDateFunction;
         if (valueTo == null || valueTo.isEmpty()) {
             valueTo = "9999-12-31 23:59:59";
             filterDateFunction = "";
@@ -99,7 +108,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         if (datalist != null && datalist.getBinder() != null) {
             StringBuilder sb = new StringBuilder();
             sb.append("((");
-            if(databaseDateFunction.isEmpty()) {
+            if (databaseDateFunction.isEmpty()) {
                 sb.append(String.format("CAST(%s AS date)", datalist.getBinder().getColumnName(name)));
             } else {
                 sb.append(databaseDateFunction.replaceAll("\\?", datalist.getBinder().getColumnName(name)));
@@ -107,18 +116,19 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
             sb.append(" BETWEEN ");
 
-            if(filterDateFunction.isEmpty()) {
+            if (filterDateFunction.isEmpty()) {
                 sb.append("CAST(? AS date) AND CAST(? AS date))");
             } else {
                 sb.append(String.format("%s AND %s)", filterDateFunction, filterDateFunction));
             }
-            if(emptyFilter){
+            if (emptyFilter) {
                 sb.append(" OR (" + String.format("CAST(%s AS date)", datalist.getBinder().getColumnName(name)) + " IS NULL)");
             }
             sb.append(")");
             queryObject.setQuery(sb.toString());
             queryObject.setValues(new String[]{valueFrom, valueTo});
 
+            LogUtil.info(getClassName(), "queryObject : getQuery [" + queryObject.getQuery() + "] getValues [" + String.join(";", queryObject.getValues()) + "]");
             return queryObject;
         }
         return null;
