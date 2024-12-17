@@ -31,12 +31,14 @@
                 "name" : "databaseDateFunction",
                 "label" : "@@datalist.dtdlfp.databaseDateFunction@@",
                 "description" : "@@datalist.dtdlfp.databaseDateFunction.desc@@",
+                "value": "str_to_date(?, '%Y-%m-%d')",
                 "type": "textfield"
             },
             {
                 "name" : "filterDateFunction",
                 "label" : "@@datalist.dtdlfp.filterDateFunction@@",
                 "description" : "@@datalist.dtdlfp.filterDateFunction.desc@@",
+                "value": "str_to_date(?, '%Y-%m-%d')",
                 "type": "textfield"
             },
             {

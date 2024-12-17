@@ -1,6 +1,6 @@
-package com.kinnara.kecakplugins.advancedatalistfilter;
+package com.kinnarastudio.kecakplugins.datalist.filter;
 
-import com.kinnara.kecakplugins.advancedatalistfilter.exceptions.ApiException;
+import com.kinnarastudio.kecakplugins.datalist.filter.exceptions.ApiException;
 import com.kinnarastudio.commons.Try;
 import com.kinnarastudio.commons.jsonstream.JSONCollectors;
 import org.joget.apps.app.dao.DatalistDefinitionDao;

@@ -1,6 +1,6 @@
-package com.kinnara.kecakplugins.advancedatalistfilter;
+package com.kinnarastudio.kecakplugins.datalist.filter;
 
-import com.kinnara.kecakplugins.advancedatalistfilter.util.CalendarProcessor;
+import com.kinnarastudio.kecakplugins.datalist.filter.util.CalendarProcessor;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.lib.TextFieldDataListFilterType;
 import org.joget.apps.datalist.model.DataList;

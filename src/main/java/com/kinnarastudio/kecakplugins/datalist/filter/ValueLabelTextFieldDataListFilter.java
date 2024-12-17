@@ -1,4 +1,4 @@
-package com.kinnara.kecakplugins.advancedatalistfilter;
+package com.kinnarastudio.kecakplugins.datalist.filter;
 
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.service.AppService;
