@@ -4,7 +4,6 @@ import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
-import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.workflow.util.WorkflowUtil;
 
@@ -33,12 +32,11 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
         final String defaultValueTo = Arrays.stream(defaultValue).skip(1).findFirst().orElse("");
 
         final String valueFrom = getValue(datalist, name + "-from", defaultValueFrom);
-        LogUtil.info(getClassName(), "getTemplate : valueFrom [" + valueFrom + "]");
         dataModel.put("valueFrom", valueFrom);
 
         final String valueTo = getValue(datalist, name + "-to", defaultValueTo);
-        LogUtil.info(getClassName(), "getTemplate : valueTo [" + valueTo + "]");
         dataModel.put("valueTo", valueTo);
+
         dataModel.put("optionsBinder", getProperty("optionsBinder"));
         dataModel.put("className", getClassName());
         dataModel.put("minView", showTime ? "hour" : "month");
@@ -57,10 +55,6 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
 
         final boolean singleValue = "true".equalsIgnoreCase(getPropertyString("singleValue"));
 
-        LogUtil.info(getClassName(), "getDataListParamString : name [" + name + "]");
-        LogUtil.info(getClassName(), "getDataListParamString : [" + datalist.getDataListParamString("fn_" + name) + "]");
-        LogUtil.info(getClassName(), "getDataListParamString : -from [" + getValue(datalist, name + "-from") + "]");
-        LogUtil.info(getClassName(), "getDataListParamString : -to [" + getValue(datalist, name + "-to") + "]");
         String valueFrom, valueTo;
         final String defaultValue = AppUtil.processHashVariable(getDefaultValue(), null, null, null);
         if (!defaultValue.isEmpty()) {
@@ -78,8 +72,6 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
                 valueTo = singleValue ? valueFrom : Optional.ofNullable(getValue(datalist, name + "-to")).orElse("");
             }
         }
-
-        LogUtil.info(getClassName(), "valueFrom [" + valueFrom + "] valueTo [" + valueTo + "]");
 
         final boolean showTime = "true".equals(getPropertyString("showTime"));
 
@@ -128,7 +120,7 @@ public class DateTimeDataListFilter extends DataListFilterTypeDefault {
             queryObject.setQuery(sb.toString());
             queryObject.setValues(new String[]{valueFrom, valueTo});
 
-            LogUtil.info(getClassName(), "queryObject : getQuery [" + queryObject.getQuery() + "] getValues [" + String.join(";", queryObject.getValues()) + "]");
+
             return queryObject;
         }
         return null;
