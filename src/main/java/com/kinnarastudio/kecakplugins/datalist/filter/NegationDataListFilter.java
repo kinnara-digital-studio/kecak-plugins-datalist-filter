@@ -1,5 +1,6 @@
 package com.kinnarastudio.kecakplugins.datalist.filter;
 
+import com.kinnarastudio.kecakplugins.datalist.filter.util.CommonUtils;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;

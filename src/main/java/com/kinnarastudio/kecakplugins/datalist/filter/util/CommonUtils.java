@@ -1,4 +1,4 @@
-package com.kinnarastudio.kecakplugins.datalist.filter;
+package com.kinnarastudio.kecakplugins.datalist.filter.util;
 
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.model.FormAjaxOptionsBinder;

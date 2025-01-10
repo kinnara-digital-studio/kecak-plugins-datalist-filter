@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Custom Condition DataList Filter",
+    "properties": [
+      {
+        "name": "operator",
+        "label": "Operator",
+        "type": "radio",
+        "value": "AND",
+        "required": "true",
+        "options": [
+          {
+            "value": "AND",
+            "label": "@@customCondition.and@@"
+          },
+          {
+            "value": "OR",
+            "label": "@@customCondition.or@@"
+          }
+        ]
+      },
+      {
+        "name": "query",
+        "label": "@@customCondition.query@@",
+        "type": "textarea",
+        "description": "@@customCondition.query.desc@@",
+        "required": "true",
+        "value": "$ LIKE '%' || ? || '%'"
+      }
+    ]
+  }
+]
