@@ -68,7 +68,7 @@ public interface CommonUtils {
             Plugin optionsBinderPlugins = pluginManager.getPlugin(className);
             if(optionsBinderPlugins != null && optionsBinder.get("properties") != null) {
                 ((PropertyEditable) optionsBinderPlugins).setProperties((Map) optionsBinder.get("properties"));
-                return ((FormAjaxOptionsBinder) optionsBinderPlugins).loadAjaxOptions(null, null);
+                return ((FormAjaxOptionsBinder) optionsBinderPlugins).loadAjaxOptions(null);
             }
         }
 
