@@ -57,6 +57,10 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
                     String[] split = s.split(":", 2);
 
+                    for (String splitStr : split) {
+                        LogUtil.info(getClassName(), "Splitted Str: [" + splitStr + "]");
+                    }
+                    
                     m.put("label", split.length < 2
                             ? s
                             : Arrays.stream(dataList.getColumns())
