@@ -1,8 +1,8 @@
 package com.kinnarastudio.kecakplugins.datalist.filter;
 
-import com.kinnarastudio.kecakplugins.datalist.filter.exceptions.ApiException;
 import com.kinnarastudio.commons.Try;
 import com.kinnarastudio.commons.jsonstream.JSONCollectors;
+import com.kinnarastudio.kecakplugins.datalist.filter.exceptions.ApiException;
 import com.kinnarastudio.kecakplugins.datalist.filter.util.CommonUtils;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
@@ -15,6 +15,7 @@ import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.apps.datalist.service.DataListService;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
+import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.base.PluginWebSupport;
 import org.joget.workflow.util.WorkflowUtil;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -41,17 +43,17 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
         Map dataModel = new HashMap();
         dataModel.put("name", datalist.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + name));
         dataModel.put("label", label);
-        dataModel.put("values", getValueSet(datalist, name, getPropertyString("defaultValue")));
+        dataModel.put("values", getValueSet(datalist, name, AppUtil.processHashVariable(getPropertyString("defaultValue"), null, null, null)));
 
         FormRowSet options = getStreamOptions()
                 .collect(Collectors.toCollection(FormRowSet::new));
 
-        String size=getPropertyString("size")+"px";
+        String size = getPropertyString("size") + "px";
 
         dataModel.put("options", options);
         dataModel.put("multivalue", isMultivalue() ? "multiple" : "");
         dataModel.put("size", size);
-                
+
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
     }
 
@@ -63,19 +65,25 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
     public DataListFilterQueryObject getQueryObject(DataList datalist, String name) {
         DataListFilterQueryObject queryObject = new DataListFilterQueryObject();
         if (datalist != null && datalist.getBinder() != null) {
-            List<String> paramList = new ArrayList<>(getValueSet(datalist, name, getPropertyString("defaultValue")));
+            List<String> paramList = new ArrayList<>(getValueSet(datalist, name, AppUtil.processHashVariable(getPropertyString("defaultValue"), null, null, null)));
 
             final String columnName = datalist.getBinder().getColumnName(name);
-            String query = paramList.stream()
-                    .map(s -> "(" + columnName + " = ? OR " + columnName + " LIKE ? || ';%' OR " + columnName + " LIKE '%;' || ? OR " + columnName + " LIKE '%;' || ? || ';%')")
-                    .collect(Collectors.joining(" AND "));
+            String query;
 
-            String[] params = paramList.stream()
-                    .flatMap(s -> repeat(s, 4))
-                    .toArray(String[]::new);
+            if (paramList.isEmpty()) {
+                query = "1 = 1";
+            } else {
+                query = "FIND_IN_SET(" + columnName + "," + paramList.stream().map(s -> "?").collect(Collectors.joining(",")) + ") > 0";
+            }
 
-            queryObject.setQuery("(" + (paramList.isEmpty() ? "1 = 1" : query) + ")");
+
+            String[] params = paramList.toArray(String[]::new);
+
+            LogUtil.info(getClassName(), "query [" + query + "] param [" + String.join(";", params) + "]");
+
+            queryObject.setQuery(query);
             queryObject.setValues(params);
+            queryObject.setOperator("AND");
 
             return queryObject;
         }
@@ -88,20 +96,20 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
 
     /**
      * Return values as set
+     *
      * @param datalist
      * @param name
      * @param defaultValue
      * @return
      */
     @Nonnull
-    private Set<String> getValueSet(DataList datalist, String name, String defaultValue) {
+    protected Set<String> getValueSet(DataList datalist, String name, String defaultValue) {
         return Optional.ofNullable(getValues(datalist, name, defaultValue))
-                .map(Arrays::stream)
-                .orElseGet(Stream::empty)
+                .stream()
+                .flatMap(Arrays::stream)
                 .map(s -> s.split(";"))
                 .flatMap(Arrays::stream)
-                .distinct()
-                .filter(s -> !s.isEmpty())
+                .filter(Predicate.not(String::isEmpty))
                 .collect(Collectors.toSet());
     }
 
@@ -168,9 +176,9 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
 
     /**
      * Web Service
-     *
+     * <p>
      * Execute retrieve data for options binder
-     *
+     * <p>
      * Parameters:
      * - dataList : required, dataList ID
      * - filterName : required, filter name

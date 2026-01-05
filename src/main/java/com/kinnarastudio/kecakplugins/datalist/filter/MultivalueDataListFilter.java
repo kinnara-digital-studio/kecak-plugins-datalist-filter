@@ -1,6 +1,7 @@
 package com.kinnarastudio.kecakplugins.datalist.filter;
 
 import com.kinnarastudio.kecakplugins.datalist.filter.exceptions.ApiException;
+import com.kinnarastudio.kecakplugins.datalist.filter.util.CommonUtils;
 import org.joget.apps.app.dao.AppDefinitionDao;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
@@ -27,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,7 +51,7 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         dataModel.put("name", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "multi_" + name));
         dataModel.put("label", label);
 
-        String[] values = getValues(dataList, "multi_" +name);
+        String[] values = getValues(dataList, "multi_" + name);
         List<Map<String, String>> optionsValues = (values == null ? Stream.<String>empty() : Arrays.stream(values))
                 .map(s -> {
                     Map<String, String> m = new HashMap<>();
@@ -215,25 +217,27 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
             }
 
             // method for paging
-            final AppDefinitionDao appDefinitionDao = (AppDefinitionDao) AppUtil.getApplicationContext().getBean("appDefinitionDao");
+//            final AppDefinitionDao appDefinitionDao = (AppDefinitionDao) AppUtil.getApplicationContext().getBean("appDefinitionDao");
 
-            final String appId = optParameter(request, "appId").orElse("");
+//            final String appId = optParameter(request, "appId").orElse("");
             final String dataListId = getParameter(request, "dataListId");
             final Collection<String> columns = getParameterValues(request, "columns");
             final String search = optParameter(request, "search").orElse("");
             final long page = optParameter(request, "page").map(Long::parseLong).orElse(1L);
 
-            final long appVersion = optParameter(request, "appVersion")
-                    .map(Long::parseLong)
-                    .orElseGet(() -> appDefinitionDao.getPublishedVersion(appId));
+//            final long appVersion = optParameter(request, "appVersion")
+//                    .map(Long::parseLong)
+//                    .orElseGet(() -> appDefinitionDao.getPublishedVersion(appId));
 
-            final AppDefinition appDefinition = appId.isEmpty() ? AppUtil.getCurrentAppDefinition() : appDefinitionDao.loadVersion(appId, appVersion);
-            if (appDefinition == null) {
-                throw new ApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
-            }
+//            final AppDefinition appDefinition = appId.isEmpty() ? AppUtil.getCurrentAppDefinition() : appDefinitionDao.loadVersion(appId, appVersion);
+//            if (appDefinition == null) {
+//                throw new ApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
+//            }
 
-            AppUtil.setCurrentAppDefinition(appDefinition);
 
+//            AppUtil.setCurrentAppDefinition(appDefinition);
+
+            final AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
             final DataList dataList = Optional.ofNullable(generateDataList(appDefinition, dataListId))
                     .orElseThrow(() -> new ApiException(HttpServletResponse.SC_NOT_FOUND, "DataList [" + dataListId + "] not found"));
 
@@ -247,10 +251,10 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
             final Stream<Map<String, String>> streamOptionsBinder = columns.stream()
                     .filter(Objects::nonNull)
-                    .filter(s -> !s.isEmpty())
+                    .filter(Predicate.not(String::isEmpty))
 
                     // filter by respected column
-                    .map(c ->  Arrays.binarySearch(dataListColumns, new DataListColumn(c, "", false), Comparator.comparing(DataListColumn::getName)))
+                    .map(c -> Arrays.binarySearch(dataListColumns, new DataListColumn(c, "", false), Comparator.comparing(DataListColumn::getName)))
                     .filter(i -> i >= 0)
                     .map(i -> dataListColumns[i])
 
@@ -279,8 +283,8 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
             final DataListCollection<Map<String, Object>> rows = dataList.getRows();
 
             final Stream<Map<String, String>> streamColumnData = Optional.ofNullable(rows)
-                    .map(Collection::stream)
-                    .orElseGet(Stream::empty)
+                    .stream()
+                    .flatMap(Collection::stream)
                     .flatMap(m -> m.entrySet().stream())
                     .filter(e -> columns.stream().anyMatch(c -> c.equals(e.getKey())))
                     .filter(e -> searchPattern.matcher(String.valueOf(e.getValue())).find())
@@ -327,34 +331,32 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
     }
 
     private DataList generateDataList(final AppDefinition appDef, @Nonnull final String dataListId) {
-        return generateDataList(appDef, dataListId, "");
-    }
+        String cacheKey = String.join("::", getClass().getName(), "generateDataList", appDef.getAppId(), String.valueOf(appDef.getVersion()), dataListId);
 
-    private DataList generateDataList(final AppDefinition appDef, @Nonnull final String dataListId, @Nonnull final String columnName) {
-        String cacheKey = dataListId + "::" + columnName;
+        return CommonUtils.getFromCache(cacheKey, () -> {
+            ApplicationContext appContext = AppUtil.getApplicationContext();
 
-        ApplicationContext appContext = AppUtil.getApplicationContext();
+            DataListService dataListService = (DataListService) appContext.getBean("dataListService");
+            DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) appContext.getBean("datalistDefinitionDao");
 
-        DataListService dataListService = (DataListService) appContext.getBean("dataListService");
-        DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) appContext.getBean("datalistDefinitionDao");
+            DatalistDefinition datalistDefinition = datalistDefinitionDao.loadById(dataListId, appDef);
+            if (datalistDefinition == null) {
+                LogUtil.warn(getClassName(), "DataList Definition not found for ID [" + dataListId + "]");
+                return null;
+            }
 
-        DatalistDefinition datalistDefinition = datalistDefinitionDao.loadById(dataListId, appDef);
-        if (datalistDefinition == null) {
-            LogUtil.warn(getClassName(), "DataList Definition not found for ID [" + dataListId + "]");
-            return null;
-        }
+            DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
+            if (dataList != null) {
+                dataList.setDefaultPageSize(DataList.MAXIMUM_PAGE_SIZE);
+                dataList.setFilters(new DataListFilter[0]);
+                return dataList;
 
-        DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
-        if (dataList != null) {
-            dataList.setDefaultPageSize(DataList.MAXIMUM_PAGE_SIZE);
-            dataList.setFilters(new DataListFilter[0]);
+            } else {
+                LogUtil.warn(getClassName(), "Error generating dataList [" + dataListId + "]");
+            }
+
             return dataList;
-
-        } else {
-            LogUtil.warn(getClassName(), "Error generating dataList [" + dataListId + "]");
-        }
-
-        return dataList;
+        });
     }
 
     private @Nonnull Map<String, String> getOptionMap(@Nonnull DataListColumnFormat formatterPlugins) {

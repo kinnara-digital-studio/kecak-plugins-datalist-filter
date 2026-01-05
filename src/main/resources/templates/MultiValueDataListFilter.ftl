@@ -38,7 +38,7 @@
                 }
 
                 $.ajax({
-                        url: '${request.contextPath}/web/json/plugin/${className}/service',
+                        url: '${request.contextPath}/web/json/app/${appId!}/${appVersion!}/plugin/${className}/service',
                         delay : 1000,
                         dataType: 'json',
                         data : {

@@ -32,9 +32,9 @@ public class NegationDataListFilter extends DataListFilterTypeDefault implements
     }
 
     @Override
-    public DataListFilterQueryObject getQueryObject(DataList dataList, String s) {
+    public DataListFilterQueryObject getQueryObject(DataList dataList, String name) {
         DataListFilterQueryObject negated = Optional.ofNullable(getFilter())
-                .map(f -> f.getQueryObject(dataList, s))
+                .map(f -> f.getQueryObject(dataList, name))
                 .map(peek(q -> q.setQuery("not (" + q.getQuery() + ")")))
                 .orElse(null);
 

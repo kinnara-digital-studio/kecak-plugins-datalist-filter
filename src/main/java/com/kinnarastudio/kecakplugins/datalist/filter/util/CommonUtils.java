@@ -1,20 +1,22 @@
 package com.kinnarastudio.kecakplugins.datalist.filter.util;
 
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.form.model.FormAjaxOptionsBinder;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
 import org.joget.apps.form.service.FormUtil;
+import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.Plugin;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.property.model.PropertyEditable;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import javax.annotation.Nullable;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,16 +40,16 @@ public interface CommonUtils {
      */
     @Nonnull
     default FormRowSet getPropertyGridOptions(String name) {
-        return Optional.ofNullable((Object[])getProperty(name))
-                .map(Arrays::stream)
-                .orElseGet(Stream::empty)
+        return Optional.ofNullable((Object[]) getProperty(name)).stream()
+                .flatMap(Arrays::stream)
                 .map(o -> (Map<String, String>)o)
-                .map(m -> {
-                    FormRow formRow = new FormRow();
-                    formRow.setProperty(FormUtil.PROPERTY_VALUE, String.valueOf(m.get("value")));
-                    formRow.setProperty(FormUtil.PROPERTY_LABEL, String.valueOf(m.get("label")));
-                    return formRow;
-                })
+                .map(m -> new FormRow() {{
+                    String value = String.valueOf(m.get("value"));
+                    String label = String.valueOf(m.get("label"));
+
+                    setProperty(FormUtil.PROPERTY_VALUE, value);
+                    setProperty(FormUtil.PROPERTY_LABEL, label.isEmpty() ? value : label);
+                }})
                 .collect(Collectors.toCollection(FormRowSet::new));
     }
 
@@ -112,5 +114,29 @@ public interface CommonUtils {
                 .anyMatch(s1 -> set2.stream()
                         .anyMatch(s1::contains));
         return result;
+    }
+
+    @Nullable
+    static <T> T getFromCache(String cacheKey, Supplier<T> ifNoCache) {
+
+        final Cache cache = (Cache) AppUtil.getApplicationContext().getBean("fluCache");
+
+        Element cached = cache.get(cacheKey);
+        if (cached != null) {
+            T value = (T) cached.getObjectValue();
+            assert Objects.nonNull(value);
+            return value;
+        }
+
+        assert Objects.nonNull(ifNoCache);
+
+        T value = ifNoCache.get();
+        LogUtil.info(CommonUtils.class.getName(), "Setting cache for key [" + cacheKey + "] value [" + value + "]");
+
+        if(value != null) {
+            cache.put(new Element(cacheKey, value));
+        }
+
+        return value;
     }
 }
