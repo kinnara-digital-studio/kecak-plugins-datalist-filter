@@ -1,0 +1,55 @@
+[
+    {
+        "title": "Multi-Field Datalist Filter",
+        "properties": [
+            {
+                "name": "defaultValue",
+                "label": "Default Value",
+                "type": "hidden"
+            },
+            {
+                "name": "columns",
+                "label": "Columns",
+                "type": "multiselect",
+                "options_callback": "DatalistBuilder.getColumnOptions",
+                "required": "true"
+            },
+            {
+                "name": "messageSearching",
+                "label": "Searching Message",
+                "type": "textfield",
+                "required": "true",
+                "value": "Searching...",
+                "control_field": "modernStyle",
+                "control_value": "true"
+            },
+            {
+                "name": "messageLoadingMore",
+                "label": "Loading More Message",
+                "type": "textfield",
+                "required": "true",
+                "value": "Loading More...",
+                "control_field": "modernStyle",
+                "control_value": "true"
+            },
+            {
+                "name": "messageNoResults",
+                "label": "No Results Message",
+                "type": "textfield",
+                "required": "true",
+                "value": "No Results Found",
+                "control_field": "modernStyle",
+                "control_value": "true"
+            },
+            {
+                "name": "messageErrorLoading",
+                "label": "Error Loading Message",
+                "type": "textfield",
+                "required": "true",
+                "value": "Error Loading",
+                "control_field": "modernStyle",
+                "control_value": "true"
+            }
+        ]
+    }
+]

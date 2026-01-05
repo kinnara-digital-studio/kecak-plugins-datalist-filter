@@ -1,13 +1,38 @@
 package com.kinnarastudio.kecakplugins.datalist.filter;
 
-import com.kinnarastudio.kecakplugins.datalist.filter.exceptions.ApiException;
-import com.kinnarastudio.kecakplugins.datalist.filter.util.CommonUtils;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.joget.apps.app.dao.AppDefinitionDao;
 import org.joget.apps.app.dao.DatalistDefinitionDao;
 import org.joget.apps.app.model.AppDefinition;
 import org.joget.apps.app.model.DatalistDefinition;
 import org.joget.apps.app.service.AppUtil;
-import org.joget.apps.datalist.model.*;
+import org.joget.apps.datalist.model.DataList;
+import org.joget.apps.datalist.model.DataListCollection;
+import org.joget.apps.datalist.model.DataListColumn;
+import org.joget.apps.datalist.model.DataListColumnFormat;
+import org.joget.apps.datalist.model.DataListFilter;
+import org.joget.apps.datalist.model.DataListFilterQueryObject;
+import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.apps.datalist.service.DataListService;
 import org.joget.apps.form.lib.SelectBox;
 import org.joget.apps.form.model.FormBinder;
@@ -22,87 +47,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.context.ApplicationContext;
 
-import javax.annotation.Nonnull;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.kinnarastudio.kecakplugins.datalist.filter.exceptions.ApiException;
 
-/**
- * @author aristo
- * <p>
- * Free Text Filter
- * Filter as multivalue and multicolumn
- */
-public class MultivalueDataListFilter extends DataListFilterTypeDefault implements PluginWebSupport {
+public class MultiFieldDatalistFilter extends DataListFilterTypeDefault implements PluginWebSupport {
     private final static int PAGE_SIZE = 20;
 
-    @Override
-    public String getTemplate(DataList dataList, String name, String label) {
-        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
-        AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
-
-        Map dataModel = new HashMap();
-        dataModel.put("name", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "multi_" + name));
-        dataModel.put("label", label);
-
-        String[] values = getValues(dataList, "multi_" + name);
-        List<Map<String, String>> optionsValues = (values == null ? Stream.<String>empty() : Arrays.stream(values))
-                .map(s -> {
-                    Map<String, String> m = new HashMap<>();
-                    m.put("value", s);
-
-                    String[] split = s.split(":", 2);
-
-                    for (String splitStr : split) {
-                        LogUtil.info(getClassName(), "Splitted Str: [" + splitStr + "]");
-                    }
-                    
-                    m.put("label", split.length < 2
-                            ? s
-                            : Arrays.stream(dataList.getColumns())
-                            .filter(c -> split[0].equals(c.getName()))
-                            .findAny()
-                            .map(DataListColumn::getLabel)
-                            .orElse(split[0]) + ":" + split[1]);
-                    return m;
-                })
-                .collect(Collectors.toList());
-        dataModel.put("optionsValues", optionsValues);
-        dataModel.put("selectBoxClassName", SelectBox.class.getName());
-        dataModel.put("className", getClassName());
-        dataModel.put("appId", appDefinition.getAppId());
-        dataModel.put("appVersion", appDefinition.getVersion());
-        dataModel.put("dataListId", dataList.getId());
-        dataModel.put("placeholder", "Search: "
-                + ": "
-                + (getPropertyString("columns") == null
-                ? Stream.<String>empty()
-                : Arrays.stream(getPropertyString("columns").split(";")))
-
-                // map column name to column label
-                .map(s -> (dataList.getColumns() == null
-                        ? Stream.<DataListColumn>empty()
-                        : Arrays.stream(dataList.getColumns()))
-                        .filter(Objects::nonNull)
-                        .filter(c -> s.equals(dataList.getBinder().getColumnName(c.getName())))
-                        .map(DataListColumn::getLabel)
-                        .findAny()
-                        .orElse(s))
-
-                .collect(Collectors.joining(", ")));
-        dataModel.put("messageLoadingMore", getPropertyString("messageLoadingMore"));
-        dataModel.put("messageErrorLoading", getPropertyString("messageErrorLoading"));
-        dataModel.put("messageNoResults", getPropertyString("messageNoResults"));
-        dataModel.put("messageSearching", getPropertyString("messageSearching"));
-        dataModel.put("columns", getPropertyString("columns"));
-        return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/MultiValueDataListFilter.ftl", null);
-    }
+    private final String LABEL = "Multi-Field Datalist Filter";
 
     @Override
     public DataListFilterQueryObject getQueryObject(DataList dataList, String name) {
@@ -167,8 +117,87 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
     }
 
     @Override
+    public String getTemplate(DataList dataList, String name, String label) {
+        PluginManager pluginManager = (PluginManager) AppUtil.getApplicationContext().getBean("pluginManager");
+        AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
+
+        Map dataModel = new HashMap();
+        dataModel.put("name", dataList.getDataListEncodedParamName(DataList.PARAMETER_FILTER_PREFIX + "multi_" + name));
+        dataModel.put("label", label);
+
+        String[] values = getValues(dataList, "multi_" +name);
+        List<Map<String, String>> optionsValues = (values == null ? Stream.<String>empty() : Arrays.stream(values))
+                .map(s -> {
+                    Map<String, String> m = new HashMap<>();
+                    m.put("value", s);
+
+                    String[] split = s.split(":", 2);
+
+                    m.put("label", split.length < 2
+                            ? s
+                            : Arrays.stream(dataList.getColumns())
+                            .filter(c -> split[0].equals(c.getName()))
+                            .findAny()
+                            .map(DataListColumn::getLabel)
+                            .orElse("Search " + split[1]) + " in " + split[0]);
+                    return m;
+                })
+                .collect(Collectors.toList());
+
+        dataModel.put("optionsValues", optionsValues);
+        dataModel.put("selectBoxClassName", SelectBox.class.getName());
+        dataModel.put("className", getClassName());
+        dataModel.put("appId", appDefinition.getAppId());
+        dataModel.put("appVersion", appDefinition.getVersion());
+        dataModel.put("dataListId", dataList.getId());
+        dataModel.put("placeholder", "Search: "
+                + ""
+                + (getPropertyString("columns") == null
+                ? Stream.<String>empty()
+                : Arrays.stream(getPropertyString("columns").split(";")))
+
+                // map column name to column label
+                .map(s -> (dataList.getColumns() == null
+                        ? Stream.<DataListColumn>empty()
+                        : Arrays.stream(dataList.getColumns()))
+                        .filter(Objects::nonNull)
+                        .filter(c -> s.equals(dataList.getBinder().getColumnName(c.getName())))
+                        .map(DataListColumn::getLabel)
+                        .findAny()
+                        .orElse(s))
+
+                .collect(Collectors.joining(", ")));
+        dataModel.put("messageLoadingMore", getPropertyString("messageLoadingMore"));
+        dataModel.put("messageErrorLoading", getPropertyString("messageErrorLoading"));
+        dataModel.put("messageNoResults", getPropertyString("messageNoResults"));
+        dataModel.put("messageSearching", getPropertyString("messageSearching"));
+        dataModel.put("columns", getPropertyString("columns"));
+        return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/MultiFieldDatalistFilter.ftl", null);
+    }
+
+    @Override
+    public String getClassName() {
+        return getClass().getName();
+    }
+
+    @Override
+    public String getLabel() {
+        return LABEL;
+    }
+
+    @Override
+    public String getPropertyOptions() {
+        return AppUtil.readPluginResource(getClassName(), "/properties/MultiFieldDatalistFilter.json", null, false, null);
+    }
+
+    @Override
+    public String getDescription() {
+        return getClass().getPackage().getImplementationTitle();
+    }
+
+    @Override
     public String getName() {
-        return getLabel();
+        return LABEL;
     }
 
     @Override
@@ -180,68 +209,32 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
     }
 
     @Override
-    public String getDescription() {
-        return getClass().getPackage().getImplementationTitle();
-    }
-
-    @Override
-    public String getLabel() {
-        return "Multi-value Text";
-    }
-
-    @Override
-    public String getClassName() {
-        return getClass().getName();
-    }
-
-    @Override
-    public String getPropertyOptions() {
-        return AppUtil.readPluginResource(getClassName(), "/properties/MultivalueDataListFilter.json", null, false, "/messages/MultivalueDataListFilter");
-    }
-
-    /**
-     * Generate json array with pattern
-     * [
-     * {
-     * "id" : "[colName]:[value]"
-     * "text" : "[colLabel]:[valueLabel]
-     * }
-     * ]
-     *
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
-     */
-    @Override
     public void webService(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
+            try {
             if (!"GET".equals(request.getMethod())) {
                 throw new ApiException(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Only support [GET] method");
             }
 
             // method for paging
-//            final AppDefinitionDao appDefinitionDao = (AppDefinitionDao) AppUtil.getApplicationContext().getBean("appDefinitionDao");
+            final AppDefinitionDao appDefinitionDao = (AppDefinitionDao) AppUtil.getApplicationContext().getBean("appDefinitionDao");
 
-//            final String appId = optParameter(request, "appId").orElse("");
+            final String appId = optParameter(request, "appId").orElse("");
             final String dataListId = getParameter(request, "dataListId");
             final Collection<String> columns = getParameterValues(request, "columns");
             final String search = optParameter(request, "search").orElse("");
             final long page = optParameter(request, "page").map(Long::parseLong).orElse(1L);
 
-//            final long appVersion = optParameter(request, "appVersion")
-//                    .map(Long::parseLong)
-//                    .orElseGet(() -> appDefinitionDao.getPublishedVersion(appId));
+            final long appVersion = optParameter(request, "appVersion")
+                    .map(Long::parseLong)
+                    .orElseGet(() -> appDefinitionDao.getPublishedVersion(appId));
 
-//            final AppDefinition appDefinition = appId.isEmpty() ? AppUtil.getCurrentAppDefinition() : appDefinitionDao.loadVersion(appId, appVersion);
-//            if (appDefinition == null) {
-//                throw new ApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
-//            }
+            final AppDefinition appDefinition = appId.isEmpty() ? AppUtil.getCurrentAppDefinition() : appDefinitionDao.loadVersion(appId, appVersion);
+            if (appDefinition == null) {
+                throw new ApiException(HttpServletResponse.SC_BAD_REQUEST, "Application Definition [" + appId + "] not found");
+            }
 
+            AppUtil.setCurrentAppDefinition(appDefinition);
 
-//            AppUtil.setCurrentAppDefinition(appDefinition);
-
-            final AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
             final DataList dataList = Optional.ofNullable(generateDataList(appDefinition, dataListId))
                     .orElseThrow(() -> new ApiException(HttpServletResponse.SC_NOT_FOUND, "DataList [" + dataListId + "] not found"));
 
@@ -255,10 +248,10 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
 
             final Stream<Map<String, String>> streamOptionsBinder = columns.stream()
                     .filter(Objects::nonNull)
-                    .filter(Predicate.not(String::isEmpty))
+                    .filter(s -> !s.isEmpty())
 
                     // filter by respected column
-                    .map(c -> Arrays.binarySearch(dataListColumns, new DataListColumn(c, "", false), Comparator.comparing(DataListColumn::getName)))
+                    .map(c ->  Arrays.binarySearch(dataListColumns, new DataListColumn(c, "", false), Comparator.comparing(DataListColumn::getName)))
                     .filter(i -> i >= 0)
                     .map(i -> dataListColumns[i])
 
@@ -280,15 +273,15 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                             .map(e -> {
                                 Map<String, String> m = new HashMap<>();
                                 m.put("id", c.getName() + ":" + e.getKey());
-                                m.put("text", c.getLabel() + ":" + e.getValue());
+                                m.put("text", "Search " + e.getValue() + " in " + c.getLabel());
                                 return m;
                             }));
 
             final DataListCollection<Map<String, Object>> rows = dataList.getRows();
 
             final Stream<Map<String, String>> streamColumnData = Optional.ofNullable(rows)
-                    .stream()
-                    .flatMap(Collection::stream)
+                    .map(Collection::stream)
+                    .orElseGet(Stream::empty)
                     .flatMap(m -> m.entrySet().stream())
                     .filter(e -> columns.stream().anyMatch(c -> c.equals(e.getKey())))
                     .filter(e -> searchPattern.matcher(String.valueOf(e.getValue())).find())
@@ -299,12 +292,13 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
                         m.put("id", e.getKey() + ":" + e.getValue());
 
                         // TEXT contains FIELD_LABEL:FIELD_VALUE
-                        m.put("text", Stream.of(Arrays.binarySearch(dataListColumns, new DataListColumn(e.getKey(), "", false), Comparator.comparing(DataListColumn::getName)))
-                                .filter(i -> i >= 0)
-                                .map(i -> dataListColumns[i])
-                                .findAny()
-                                .map(DataListColumn::getLabel)
-                                .orElse(String.valueOf(e.getKey())) + ":" + e.getValue());
+                        m.put("text", "Search " + e.getValue() + " in " + 
+                                Stream.of(Arrays.binarySearch(dataListColumns, new DataListColumn(e.getKey(), "", false), Comparator.comparing(DataListColumn::getName)))
+                                    .filter(i -> i >= 0)
+                                    .map(i -> dataListColumns[i])
+                                    .findAny()
+                                    .map(DataListColumn::getLabel)
+                                    .orElse(String.valueOf(e.getKey())));
 
                         return m;
                     });
@@ -332,35 +326,6 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
             LogUtil.error(getClassName(), e, e.getMessage());
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
         }
-    }
-
-    private DataList generateDataList(final AppDefinition appDef, @Nonnull final String dataListId) {
-        String cacheKey = String.join("::", getClass().getName(), "generateDataList", appDef.getAppId(), String.valueOf(appDef.getVersion()), dataListId);
-
-        return CommonUtils.getFromCache(cacheKey, () -> {
-            ApplicationContext appContext = AppUtil.getApplicationContext();
-
-            DataListService dataListService = (DataListService) appContext.getBean("dataListService");
-            DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) appContext.getBean("datalistDefinitionDao");
-
-            DatalistDefinition datalistDefinition = datalistDefinitionDao.loadById(dataListId, appDef);
-            if (datalistDefinition == null) {
-                LogUtil.warn(getClassName(), "DataList Definition not found for ID [" + dataListId + "]");
-                return null;
-            }
-
-            DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
-            if (dataList != null) {
-                dataList.setDefaultPageSize(DataList.MAXIMUM_PAGE_SIZE);
-                dataList.setFilters(new DataListFilter[0]);
-                return dataList;
-
-            } else {
-                LogUtil.warn(getClassName(), "Error generating dataList [" + dataListId + "]");
-            }
-
-            return dataList;
-        });
     }
 
     private @Nonnull Map<String, String> getOptionMap(@Nonnull DataListColumnFormat formatterPlugins) {
@@ -392,6 +357,37 @@ public class MultivalueDataListFilter extends DataListFilterTypeDefault implemen
         return optionMap;
     }
 
+    private DataList generateDataList(final AppDefinition appDef, @Nonnull final String dataListId) {
+        return generateDataList(appDef, dataListId, "");
+    }
+
+    private DataList generateDataList(final AppDefinition appDef, @Nonnull final String dataListId, @Nonnull final String columnName) {
+        String cacheKey = dataListId + "::" + columnName;
+
+        ApplicationContext appContext = AppUtil.getApplicationContext();
+
+        DataListService dataListService = (DataListService) appContext.getBean("dataListService");
+        DatalistDefinitionDao datalistDefinitionDao = (DatalistDefinitionDao) appContext.getBean("datalistDefinitionDao");
+
+        DatalistDefinition datalistDefinition = datalistDefinitionDao.loadById(dataListId, appDef);
+        if (datalistDefinition == null) {
+            LogUtil.warn(getClassName(), "DataList Definition not found for ID [" + dataListId + "]");
+            return null;
+        }
+
+        DataList dataList = dataListService.fromJson(datalistDefinition.getJson());
+        if (dataList != null) {
+            dataList.setDefaultPageSize(DataList.MAXIMUM_PAGE_SIZE);
+            dataList.setFilters(new DataListFilter[0]);
+            return dataList;
+
+        } else {
+            LogUtil.warn(getClassName(), "Error generating dataList [" + dataListId + "]");
+        }
+
+        return dataList;
+    }
+    
     /**
      * Get required parameter
      *
