@@ -15,6 +15,7 @@ import org.joget.apps.datalist.model.DataListFilterTypeDefault;
 import org.joget.apps.datalist.service.DataListService;
 import org.joget.apps.form.model.FormRow;
 import org.joget.apps.form.model.FormRowSet;
+import org.joget.apps.form.service.FormUtil;
 import org.joget.commons.util.LogUtil;
 import org.joget.plugin.base.PluginManager;
 import org.joget.plugin.base.PluginWebSupport;
@@ -53,6 +54,8 @@ public class SelectBoxDataListFilter extends DataListFilterTypeDefault implement
         dataModel.put("options", options);
         dataModel.put("multivalue", isMultivalue() ? "multiple" : "");
         dataModel.put("size", size);
+
+        dataModel.put(FormUtil.PROPERTY_ELEMENT_UNIQUE_KEY, FormUtil.getUniqueKey());
 
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(), "/templates/SelectBoxDataListFilter.ftl", null);
     }
