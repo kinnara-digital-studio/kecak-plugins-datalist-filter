@@ -52,25 +52,46 @@ public class MultiFieldDatalistFilter extends DataListFilterTypeDefault {
         StringBuilder query = new StringBuilder("(1<>1");
         List<String> args = new ArrayList<>();
 
-        for (String token : tokens) {
-            String[] parts = token.split(":", 2);
-            if (parts.length == 2 && !parts[0].isEmpty() && !parts[1].isEmpty()) {
-                // specific column search
+//        for (String token : tokens) {
+//            String[] parts = token.split(":", 2);
+//            if (parts.length == 2 && !parts[0].isEmpty() && !parts[1].isEmpty()) {
+//                // specific column search
+//                String col = datalist.getBinder().getColumnName(parts[0].trim());
+//                query.append(" OR lower(").append(col).append(") like lower(?)");
+//                args.add("%" + parts[1].trim() + "%");
+//            } else if (parts.length >= 1 && !parts[0].isEmpty()) {
+//                // free search – search all columns
+//                DataListColumn[] columns = datalist.getColumns();
+//                if (columns != null) {
+//                    for (DataListColumn c : columns) {
+//                        String col = datalist.getBinder().getColumnName(c.getName());
+//                        query.append(" OR lower(").append(col).append(") like lower(?)");
+//                        args.add("%" + parts[0].trim() + "%");
+//                    }
+//                }
+//            }
+//        }
+
+        tokens.stream().map(token -> {
+            return token.split(":", 2);
+        }).filter(parts -> parts.length >= 1 && !parts[0].isEmpty()
+        ).forEach(parts -> {
+            if (parts.length == 2 && !parts[1].isEmpty()){
                 String col = datalist.getBinder().getColumnName(parts[0].trim());
                 query.append(" OR lower(").append(col).append(") like lower(?)");
                 args.add("%" + parts[1].trim() + "%");
-            } else if (parts.length >= 1 && !parts[0].isEmpty()) {
-                // free search – search all columns
+            } else {
                 DataListColumn[] columns = datalist.getColumns();
                 if (columns != null) {
-                    for (DataListColumn c : columns) {
+                    Arrays.stream(columns).forEach(c ->{
                         String col = datalist.getBinder().getColumnName(c.getName());
                         query.append(" OR lower(").append(col).append(") like lower(?)");
                         args.add("%" + parts[0].trim() + "%");
-                    }
+                    });
                 }
             }
         }
+        );
 
         query.append(")");
 

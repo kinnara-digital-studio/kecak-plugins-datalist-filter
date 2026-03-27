@@ -181,7 +181,7 @@
         }
     });
 
-    // Click on a dropdown item → add chip & submit
+    // Click on a dropdown item → add chip only (user clicks Show button to apply)
     dropdown.addEventListener('click', function (e) {
         var item = e.target.closest('.mf-dropdown-item');
         if (!item) return;
@@ -197,17 +197,15 @@
         addChip(tokenValue, tokenLabel);
         textInput.value = '';
         dropdown.classList.remove('open');
-        submitForm();
     });
 
-    // Remove chip
+    // Remove chip (user clicks Show button to re-apply)
     inputRow.addEventListener('click', function (e) {
         if (!e.target.classList.contains('mf-chip-remove')) return;
         var chip = e.target.closest('.mf-chip');
         if (!chip) return;
         var val = chip.dataset.value;
         removeChip(chip, val);
-        submitForm();
     });
 
     // Close dropdown when clicking outside

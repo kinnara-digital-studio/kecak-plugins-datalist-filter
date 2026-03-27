@@ -7,3 +7,4 @@ target/
 bower_components/
 node_modules/
 package-lock.json
+explanation_and_perf_analysis.md
