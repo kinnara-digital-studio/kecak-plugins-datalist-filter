@@ -42,7 +42,8 @@
     color: #714B67;
     border: 1px solid #c8a8bc;
     border-radius: 12px;
-    padding: 2px 8px;
+    padding: 0;  /* ← biarkan child yang atur */
+    overflow: hidden; /* agar border-radius chip terapply ke child */
     font-size: 12px;
     white-space: nowrap;
 }
@@ -51,8 +52,20 @@
     font-weight: bold;
     line-height: 1;
     color: #714B67;
+    padding: 2px 6px 2px 0;
 }
 .mf-chip-remove:hover { color: #a00; }
+
+.mf-chip-gear {
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 1;
+    color: #714B67;
+    padding: 2px 6px;
+    background: #e8dce5;
+    border-right: 1px solid #c8a8bc;
+}
+.mf-chip-gear:hover { color: #a00; }
 
 /* ---- Text input ---- */
 .mf-text-input {
@@ -105,6 +118,7 @@
 
 <div class="mf-filter-wrapper" id="mfWrapper_${name}">
 
+    <input type="hidden" id="${name}-jsonForm" value="${jsonForm!}"/>
     <#-- Hidden select that carries filter values to the server -->
     <select id="mfSelect_${name}" name="${name}" multiple style="display:none;">
         <#list selectedChips! as chip>
@@ -120,6 +134,7 @@
     <div class="mf-input-row" id="mfInputRow_${name}">
         <#list selectedChips! as chip>
             <span class="mf-chip" data-value="${chip.value?html}">
+                <span class="mf-chip-gear" title="Settings">⚙</span>
                 ${chip.label?html}
                 <span class="mf-chip-remove" title="Remove">×</span>
             </span>
@@ -161,6 +176,9 @@
     var textInput = document.getElementById(textInputId);
     var dropdown  = document.getElementById(dropdownId);
 
+    var jsonForm = JSON.parse(document.getElementById('${name}-jsonForm').value || '{}');
+    var nonce = '${nonce!}';
+
     // Click on input-row focusses the hidden text field
     inputRow.addEventListener('click', function (e) {
         if (!e.target.classList.contains('mf-chip-remove')) {
@@ -201,11 +219,25 @@
 
     // Remove chip (user clicks Show button to re-apply)
     inputRow.addEventListener('click', function (e) {
-        if (!e.target.classList.contains('mf-chip-remove')) return;
         var chip = e.target.closest('.mf-chip');
         if (!chip) return;
         var val = chip.dataset.value;
-        removeChip(chip, val);
+        if(e.target.classList.contains('mf-chip-gear')) {
+            var parts = val.split(':');
+            var colName = parts[0];
+            var term = parts[1];
+            var data = {
+                field_name: colName,
+                search_value: term
+            };
+            var appId = "${appId!''}";
+            var appVersion = "${appVersion!''}";
+            popupForm(wrapperId, appId, appVersion, jsonForm, nonce, {}, data, 800, 900);
+            return;
+        }
+        if(e.target.classList.contains('mf-chip-remove')) {
+            removeChip(chip, val);
+        }
     });
 
     // Close dropdown when clicking outside
@@ -256,7 +288,7 @@
         var chip = document.createElement('span');
         chip.className = 'mf-chip';
         chip.dataset.value = value;
-        chip.innerHTML = escapeHtml(label) + ' <span class="mf-chip-remove" title="Remove">\u00d7</span>';
+        chip.innerHTML = '<span class="mf-chip-gear" title="Settings">⚙</span>' + escapeHtml(label) + ' <span class="mf-chip-remove" title="Remove">\u00d7</span>';
         inputRow.insertBefore(chip, textInput);
     }
 
@@ -273,6 +305,78 @@
         }
     }
 
+    function popupForm(elementId, appId, appVersion, jsonForm, nonce, args, data, height, width) {
+        <#--  let isEditable = ${editable?c};  -->
+        let label = 'Submit';
+        let formUrl = '${request.contextPath}/web/app/' + appId + '/' + appVersion + '/form/embed?_submitButtonLabel=' + label;
+        let frameId = args.frameId = 'Frame_' + elementId;
+
+        if (data) {
+          for (var key in data) {
+              if (data.hasOwnProperty(key) && data[key]) {
+                  if (formUrl.indexOf("?") !== -1) {
+                      formUrl += "&";
+                  } else {
+                      formUrl += "?";
+                  }
+                  formUrl += encodeURIComponent(key) + "=" + encodeURIComponent(data[key]);
+              }
+          }
+        }
+        formUrl += UI.userviewThemeParams();
+
+        var params = {
+          _json : JSON.stringify(jsonForm ? jsonForm : {}),
+          _callback : 'onSubmitted',
+          _setting : JSON.stringify(args ? args : {}).replace(/"/g, "'"),
+          _jsonrow : JSON.stringify(data ? data : {}),
+          _nonce : nonce
+        };
+        JPopup.show(frameId, formUrl, params, "", width, height);
+    }
+
+    function onSubmitted(args) {
+        let result = JSON.parse(args.result);
+        let frameId = args.frameId;
+
+        if (JPopup) {
+            JPopup.hide(frameId);
+        }
+
+        if (result && result.id) {
+            var updatedId = result.id;
+            var updatedLabel = result[labelField] || "(no label)";
+            var updatedStatus = result[statusField] || "";
+
+            var rawCanMove = result[canMoveField];
+            canMoveMap[updatedId] = (rawCanMove === "false" || rawCanMove === false) ? false : true;
+
+            var itemData = {
+                id: updatedId,
+                title: createItemHtml(updatedLabel)
+            };
+
+            kanbanBoard.removeElement(updatedId);
+            if (updatedStatus) {
+                kanbanBoard.addElement(updatedStatus, itemData);
+
+                setTimeout(function() {
+                  var el = document.querySelector('.kanban-item[data-eid="' + updatedId + '"]');
+                  if (el) {
+                    var canMove = canMoveMap[updatedId];
+                    if (canMove === false) {
+                      el.style.cursor = 'default';
+                      el.title = 'Item cannot be moved';
+                    } else {
+                      el.style.cursor = 'grab';
+                      el.removeAttribute('title');
+                    }
+                  }
+                }, 0);
+            }
+        }
+    }
+
     function submitForm() {
         var form = select.closest('form');
         if (form) form.submit();
@@ -285,5 +389,6 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
     }
+
 })();
 </script>

@@ -1,11 +1,22 @@
 package com.kinnarastudio.kecakplugins.datalist.filter;
 
+import com.kinnarastudio.commons.Try;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.joget.apps.app.dao.FormDefinitionDao;
+import org.joget.apps.app.model.AppDefinition;
+import org.joget.apps.app.model.FormDefinition;
 import org.joget.apps.app.service.AppUtil;
 import org.joget.apps.datalist.model.DataList;
 import org.joget.apps.datalist.model.DataListColumn;
 import org.joget.apps.datalist.model.DataListFilterQueryObject;
 import org.joget.apps.datalist.model.DataListFilterTypeDefault;
+import org.joget.apps.form.service.FormService;
+import org.joget.apps.form.service.FormUtil;
+import org.joget.commons.util.SecurityUtil;
 import org.joget.plugin.base.PluginManager;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.context.ApplicationContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -157,6 +168,15 @@ public class MultiFieldDatalistFilter extends DataListFilterTypeDefault {
                 ? "Search..."
                 : getPropertyString("placeholder"));
 
+        final AppDefinition appDefinition = AppUtil.getCurrentAppDefinition();
+        String jsonString = AppUtil.readPluginResource(getClassName(), "templates/form.json");
+        final JSONObject jsonForm = getJsonForm(jsonString, false);
+        dataModel.put("jsonForm", StringEscapeUtils.escapeHtml4(jsonForm.toString()));
+        final String nonce = generateNonce(appDefinition, jsonForm.toString());
+        dataModel.put("nonce", nonce);
+        dataModel.put("appId", appDefinition.getAppId());
+        dataModel.put("appVersion", appDefinition.getVersion());
+
         return pluginManager.getPluginFreeMarkerTemplate(dataModel, getClassName(),
                 "/templates/MultiFieldDatalistFilter.ftl", null);
     }
@@ -196,5 +216,25 @@ public class MultiFieldDatalistFilter extends DataListFilterTypeDefault {
     public String getPropertyOptions() {
         return AppUtil.readPluginResource(getClassName(),
                 "/properties/MultiFieldDatalistFilter.json", null, false, null);
+    }
+
+    protected JSONObject getJsonForm(String jsonString, boolean readonly) {
+        ApplicationContext appContext = AppUtil.getApplicationContext();
+        FormService formService = (FormService) appContext.getBean("formService");
+//        FormDefinitionDao formDefinitionDao = (FormDefinitionDao) appContext.getBean("formDefinitionDao");
+//        AppDefinition appDef = AppUtil.getCurrentAppDefinition();
+
+        return Optional.of(jsonString)
+                .map(formService::createElementFromJson)   // createElementFromJson
+                .map(Try.toPeek(e -> FormUtil.setReadOnlyProperty(e, readonly, readonly)))   // setReadOnlyProperty (kalau perlu)
+                .map(formService::generateElementJson)   // generateElementJson
+                .map(Try.onFunction(JSONObject::new))   // new JSONObject
+                .orElseGet(JSONObject::new);
+
+    }
+    protected String generateNonce(AppDefinition appDefinition, String jsonForm) {
+        return SecurityUtil.generateNonce(
+                new String[] { "EmbedForm", appDefinition.getAppId(), appDefinition.getVersion().toString(), jsonForm },
+                1);
     }
 }
