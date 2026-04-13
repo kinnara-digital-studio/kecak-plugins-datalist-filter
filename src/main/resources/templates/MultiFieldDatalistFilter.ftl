@@ -133,7 +133,7 @@
     <#-- Visible row: chips + text input -->
     <div class="mf-input-row" id="mfInputRow_${name}">
         <#list selectedChips! as chip>
-            <span class="mf-chip" data-value="${chip.value?html}">
+            <span class="mf-chip" data-value="${chip.value?html}" data-col-label="${chip.colLabel?html}">
                 <span class="mf-chip-gear" title="Settings">⚙</span>
                 ${chip.label?html}
                 <span class="mf-chip-remove" title="Remove">×</span>
@@ -178,6 +178,9 @@
 
     var jsonForm = JSON.parse(document.getElementById('${name}-jsonForm').value || '{}');
     var nonce = '${nonce!}';
+    var activeChip = null;
+    var activeColName = null;
+    var activeColLabel = null;
 
     // Click on input-row focusses the hidden text field
     inputRow.addEventListener('click', function (e) {
@@ -223,11 +226,25 @@
         if (!chip) return;
         var val = chip.dataset.value;
         if(e.target.classList.contains('mf-chip-gear')) {
+            activeChip = chip;
+            // var matchingItem = dropdown.querySelector('[data-col="' + activeColName + '"]');
+            activeColLabel = chip.dataset.colLabel;
             var parts = val.split(':');
-            var colName = parts[0];
-            var term = parts[1];
+            activeColName  = parts[0];
+            var term;
+            var currentOperator;
+
+            if (parts.length === 3) {
+                currentOperator = parts[1];
+                term = parts[2];
+            } else {
+                currentOperator = 'contains';
+                term = parts[1];
+            }
+
             var data = {
-                field_name: colName,
+                field_name: activeColName,
+                operator: currentOperator,
                 search_value: term
             };
             var appId = "${appId!''}";
@@ -335,47 +352,23 @@
         JPopup.show(frameId, formUrl, params, "", width, height);
     }
 
-    function onSubmitted(args) {
+    window.onSubmitted = function(args) {
         let result = JSON.parse(args.result);
+        var params = result._tempRequestParamsMap;
         let frameId = args.frameId;
 
         if (JPopup) {
             JPopup.hide(frameId);
         }
 
-        if (result && result.id) {
-            var updatedId = result.id;
-            var updatedLabel = result[labelField] || "(no label)";
-            var updatedStatus = result[statusField] || "";
+        var rOperator = params.operator[0];
+        var rValue    = params.search_value[0];
 
-            var rawCanMove = result[canMoveField];
-            canMoveMap[updatedId] = (rawCanMove === "false" || rawCanMove === false) ? false : true;
-
-            var itemData = {
-                id: updatedId,
-                title: createItemHtml(updatedLabel)
-            };
-
-            kanbanBoard.removeElement(updatedId);
-            if (updatedStatus) {
-                kanbanBoard.addElement(updatedStatus, itemData);
-
-                setTimeout(function() {
-                  var el = document.querySelector('.kanban-item[data-eid="' + updatedId + '"]');
-                  if (el) {
-                    var canMove = canMoveMap[updatedId];
-                    if (canMove === false) {
-                      el.style.cursor = 'default';
-                      el.title = 'Item cannot be moved';
-                    } else {
-                      el.style.cursor = 'grab';
-                      el.removeAttribute('title');
-                    }
-                  }
-                }, 0);
-            }
-        }
-    }
+        removeChip(activeChip, activeChip.dataset.value);
+        var tokenValue = activeColName + ":" + rOperator + ":" + rValue;
+        var tokenLabel = activeColLabel + ":" + rOperator + ":" + rValue;
+        addChip(tokenValue, tokenLabel);
+    };
 
     function submitForm() {
         var form = select.closest('form');

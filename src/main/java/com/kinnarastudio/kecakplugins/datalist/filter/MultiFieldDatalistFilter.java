@@ -84,10 +84,17 @@ public class MultiFieldDatalistFilter extends DataListFilterTypeDefault {
 //        }
 
         tokens.stream().map(token -> {
-            return token.split(":", 2);
+            return token.split(":");
         }).filter(parts -> parts.length >= 1 && !parts[0].isEmpty()
         ).forEach(parts -> {
-            if (parts.length == 2 && !parts[1].isEmpty()){
+            if (parts.length == 3){
+                String col = datalist.getBinder().getColumnName(parts[0].trim());
+                String operator = parts[1].trim();
+                String term = parts[2];
+                query.append(" OR ").append(toSqlClause(operator, col));
+                args.add(toSqlValue(operator, term));
+            }
+            else if (parts.length == 2 && !parts[1].isEmpty()){
                 String col = datalist.getBinder().getColumnName(parts[0].trim());
                 query.append(" OR lower(").append(col).append(") like lower(?)");
                 args.add("%" + parts[1].trim() + "%");
@@ -151,6 +158,7 @@ public class MultiFieldDatalistFilter extends DataListFilterTypeDefault {
                         .findFirst()
                         .orElse(parts[0].trim());
                 chip.put("label", colLabel + ": " + parts[1].trim());
+                chip.put("colLabel", colLabel);
             } else {
                 chip.put("label", token);
             }
@@ -236,5 +244,27 @@ public class MultiFieldDatalistFilter extends DataListFilterTypeDefault {
         return SecurityUtil.generateNonce(
                 new String[] { "EmbedForm", appDefinition.getAppId(), appDefinition.getVersion().toString(), jsonForm },
                 1);
+    }
+
+    protected String toSqlClause(String operator, String column) {
+        switch (operator) {
+            case "equals":      return "lower(" + column + ") = lower(?)";
+            case "starts_with": return "lower(" + column + ") like lower(?)";
+            case "ends_with":   return "lower(" + column + ") like lower(?)";
+            case "gte":         return column + " >= ?";
+            case "lte":         return column + " <= ?";
+            default:            return "lower(" + column + ") like lower(?)";
+        }
+    }
+
+    protected String toSqlValue(String operator, String term) {
+        switch (operator) {
+            case "equals":      return term;
+            case "starts_with": return term + "%";
+            case "ends_with":   return "%" + term;
+            case "gte":
+            case "lte":         return term;
+            default:            return "%" + term + "%";
+        }
     }
 }
